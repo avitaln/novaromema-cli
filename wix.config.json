@@ -1,0 +1,5 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/wix-config.json",
+  "appId": "1b53e870-f329-4900-8ad9-a2aa0433bd14",
+  "projectId": "novaromema-cli"
+}
