@@ -2,7 +2,9 @@
   "extends": "@wix/cli-app/tsconfig.app.json",
   "compilerOptions": {
     "rootDir": "src",
-    "types": ["react"]
+    "types": ["react"],
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false
   },
   "include": ["src"]
 }
