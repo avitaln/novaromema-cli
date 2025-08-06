@@ -1,6 +1,6 @@
 {
   "$schema": "https://dev.wix.com/wix-cli/schemas/custom-element.json",
-  "id": "df84f47d-3c8e-4074-be28-e5739952bfba",
+  "id": "21a1b027-c57d-40bb-824b-7668b0603545",
   "name": "Components Wrapper Lit",
   "width": {
     "defaultWidth": 450,
@@ -14,9 +14,8 @@
   },
   "presets": [
     {
-      "id": "ace550f9-731e-4891-ba14-0e59d3db8979",
+      "id": "6e79b04d-43f7-4a9c-b436-73399640ac66",
       "thumbnailUrl": "../../../../assets/components-wrapper-lit/thumbnail.png"
     }
   ]
 }
-
