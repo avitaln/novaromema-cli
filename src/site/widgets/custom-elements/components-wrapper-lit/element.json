@@ -1,0 +1,22 @@
+{
+  "$schema": "https://dev.wix.com/wix-cli/schemas/custom-element.json",
+  "id": "df84f47d-3c8e-4074-be28-e5739952bfba",
+  "name": "Components Wrapper Lit",
+  "width": {
+    "defaultWidth": 450,
+    "allowStretch": true
+  },
+  "height": {
+    "defaultHeight": 250
+  },
+  "installation": {
+    "autoAddToSite": true
+  },
+  "presets": [
+    {
+      "id": "ace550f9-731e-4891-ba14-0e59d3db8979",
+      "thumbnailUrl": "../../../../assets/components-wrapper-lit/thumbnail.png"
+    }
+  ]
+}
+
