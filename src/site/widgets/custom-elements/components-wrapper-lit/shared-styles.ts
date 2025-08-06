@@ -1,5 +1,6 @@
 import { css } from 'lit';
 
+// NOTE: These styles are imported only once via styles-loader.ts to prevent memory duplication
 export const sharedStyles = css`
   :host {
     --background-color: #242A35;

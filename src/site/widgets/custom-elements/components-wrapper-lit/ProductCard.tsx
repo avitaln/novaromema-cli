@@ -1,13 +1,13 @@
 import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { CatalogAPI, type Product } from './api';
-import { sharedStyles, cardStyles } from './shared-styles';
+import { loadedSharedStyles, loadedCardStyles } from './styles-loader';
 
 const FALLBACK_IMAGE = "https://static.wixstatic.com/media/614034_103e8f4ab0ae4536a38b319d3eb437ed~mv2.png/v1/fill/w_260,h_260,al_c,q_85,enc_auto/a.jpg";
 
 @customElement('product-card-lit')
 export class ProductCard extends LitElement {
-  static styles = [sharedStyles, cardStyles];
+  static styles = [loadedSharedStyles, loadedCardStyles];
 
   @property({ type: Object })
   product!: Product;

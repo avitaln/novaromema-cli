@@ -2,11 +2,11 @@ import { html, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { CatalogAPI, type Product } from './api';
 import './ProductCard'; // Import to register the custom element
-import { sharedStyles, galleryStyles } from './shared-styles';
+import { loadedSharedStyles, loadedGalleryStyles } from './styles-loader';
 
 @customElement('product-gallery-lit')
 export class ProductGallery extends LitElement {
-  static styles = [sharedStyles, galleryStyles];
+  static styles = [loadedSharedStyles, loadedGalleryStyles];
   
   @property()
   galleryClassName?: string;

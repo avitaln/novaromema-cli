@@ -2,10 +2,12 @@ import { html, LitElement } from 'lit';
 import { property } from 'lit/decorators.js';
 import { APP_NAME, WIDGET_VERSION } from '../../constants';
 import './ProductGallery'; // Import to register the custom element
-import { sharedStyles, rootStyles } from './shared-styles';
+import { combinedMainStyles } from './styles-loader';
 
 class ComponentsWrapperLit extends LitElement {
-  static styles = [sharedStyles, rootStyles];
+  static styles = combinedMainStyles;
+
+
   @property()
   displayName?: string;
 
