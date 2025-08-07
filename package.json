@@ -7,7 +7,7 @@
     "@wix/design-system": "^1.0.0",
     "@wix/editor": "^1.356.0",
     "@wix/wix-ui-icons-common": "^3.0.0",
-    "lit": "^3.3.1",
+
     "react-to-webcomponent": "^2.0.1"
   },
   "devDependencies": {
@@ -18,7 +18,10 @@
     "@wix/sdk-types": "^1.13.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "typescript": "~5.8.2"
+    "typescript": "~5.8.2",
+    "vite": "^5.4.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "@babel/plugin-proposal-decorators": "^7.24.0"
   },
   "scripts": {
     "wix": "wix",
@@ -29,6 +32,8 @@
     "preview": "wix app preview",
     "generate": "wix app generate",
     "logs": "wix app logs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:components": "vite --config vite.test.config.ts",
+    "test:build": "vite build --config vite.test.config.ts"
   }
 }
