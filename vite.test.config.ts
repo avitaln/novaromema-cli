@@ -34,8 +34,8 @@ export default defineConfig({
     host: true,
     open: true,
     proxy: {
-      // Proxy API calls to avoid CORS issues
-      '/api/catalog': {
+      // Proxy API calls to avoid CORS issues (generic for all endpoints under /api)
+      '/api': {
         target: 'https://novaromemasync.fly.dev',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),

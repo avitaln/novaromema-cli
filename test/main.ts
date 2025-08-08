@@ -1,10 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
-// Import proxy API for testing
-import { MockCatalogAPI } from './api-proxy';
-
-// Patch the API modules to use proxy endpoints with fallback to mock data
+// Patch the API modules to use proxy endpoints
 const originalFetch = window.fetch;
 window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   const url = typeof input === 'string' ? input : input.toString();
@@ -12,21 +9,7 @@ window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
   // Redirect API calls to proxy
   if (url.includes('novaromemasync.fly.dev')) {
     const proxyUrl = url.replace('https://novaromemasync.fly.dev', '/api');
-    
-    try {
-      const response = await originalFetch(proxyUrl, init);
-      if (response.ok) {
-        return response;
-      }
-      throw new Error(`Proxy failed: ${response.status}`);
-    } catch (error) {
-      // Return mock data as fallback
-      const mockResponse = await MockCatalogAPI.fetchProducts(0, 25, true);
-      return new Response(JSON.stringify(mockResponse), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
+    return originalFetch(proxyUrl, init);
   }
   
   return originalFetch(input, init);
@@ -39,6 +22,7 @@ import '../src/site/widgets/custom-elements/components-wrapper/element.tsx';
 
 // Simple router
 function router() {
+  console.log('Router called, path:', window.location.pathname);
   const path = window.location.pathname;
   const app = document.getElementById('app')!;
   
@@ -52,60 +36,130 @@ function router() {
   
   if (path === '/gallery') {
     showReactComponent(app);
+  } else if (path.startsWith('/product/')) {
+    const productId = path.split('/product/')[1];
+    console.log('Showing product page for ID:', productId);
+    // Scroll to top immediately when navigating to product page
+    window.scrollTo({
+      top: 0,
+      behavior: 'auto'
+    });
+    showProductPage(app, productId);
   } else {
     showHome(app);
   }
 }
 
+// Make router globally available
+(window as any).router = router;
+
 function showHome(app: HTMLElement) {
-  app.innerHTML = `
-    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; text-align: center;">
-      <div>
-        <h1>Product Gallery</h1>
-        <p>React-based product gallery component</p>
-        <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
-          <a href="/gallery" style="padding: 1rem 2rem; background: #61dafb; color: #000; text-decoration: none; border-radius: 4px;">🖼️ Gallery</a>
+  initializeReactComponent(app);
+  import('../src/site/widgets/custom-elements/components-wrapper/element.tsx')
+    .then((module) => {
+      const CustomElement = module.default;
+      const tagName = 'components-wrapper-element';
+      if (!customElements.get(tagName)) {
+        customElements.define(tagName, CustomElement);
+      }
+      const container = document.getElementById('react-root');
+      if (container) {
+        container.innerHTML = '';
+        const element = document.createElement(tagName) as any;
+        element.component = 'home';
+        container.appendChild(element);
+      }
+    });
+}
+
+let reactRoot: any = null;
+let isInitialized = false;
+
+function initializeReactComponent(app: HTMLElement) {
+  if (!isInitialized) {
+    app.innerHTML = `
+      <div class="header">
+        <div class="nav">
+          <a href="/" id="home-link">Home</a>
+          <a href="/gallery" id="gallery-link">Gallery</a>
         </div>
+        <div class="header-title">Nova Roma Gallery</div>
+        <div class="version">v26</div>
       </div>
-    </div>
-  `;
+      <div class="content gallery-page">
+        <div id="react-root" class="gallery-container"></div>
+      </div>
+    `;
+    
+    const rootElement = document.getElementById('react-root');
+    if (rootElement) {
+      reactRoot = ReactDOM.createRoot(rootElement);
+      isInitialized = true;
+    }
+  }
 }
 
 function showReactComponent(app: HTMLElement) {
-  app.innerHTML = '<div id="react-root" style="width: 100%; height: 100%;"></div>';
+  initializeReactComponent(app);
   
-  // Create React wrapper
-  const ReactWrapper = React.createElement('div', {
-    style: {
-      width: '100%',
-      height: '100%',
-      backgroundColor: '#242A35',
-      color: '#fcfdfd',
-      padding: '1rem 0',
-    }
-  }, [
-    React.createElement('h2', {
-      key: 'header',
-      style: { textAlign: 'center', marginBottom: '1rem', fontSize: '1.5rem' }
-    }, 'React Component - novaromema-cli version: 25'),
-    React.createElement('div', { key: 'gallery', id: 'react-gallery-container' })
-  ]);
-
-  const reactRoot = document.getElementById('react-root');
-  if (reactRoot) {
-    const root = ReactDOM.createRoot(reactRoot);
-    root.render(ReactWrapper);
-    
-    // Load the actual React gallery
-    import('../src/site/widgets/custom-elements/components-wrapper/ProductGallery.tsx')
-      .then(({ ProductGallery }) => {
-        const galleryContainer = document.getElementById('react-gallery-container');
-        if (galleryContainer) {
-          const galleryRoot = ReactDOM.createRoot(galleryContainer);
-          galleryRoot.render(React.createElement(ProductGallery));
+  // Load the ComponentsWrapper and register it
+  import('../src/site/widgets/custom-elements/components-wrapper/element.tsx')
+    .then((module) => {
+      const CustomElement = module.default;
+      
+      // Register the custom element if not already registered
+      const tagName = 'components-wrapper-element';
+      if (!customElements.get(tagName)) {
+        customElements.define(tagName, CustomElement);
+      }
+      
+      if (reactRoot) {
+        // Clear previous content and create new element
+        const container = document.getElementById('react-root');
+        if (container) {
+          container.innerHTML = '';
+          
+          // Create and configure the element
+          const element = document.createElement(tagName) as any;
+          element.component = 'gallery';
+          
+          // Append directly to container
+          container.appendChild(element);
         }
-      });
-  }
+      }
+    });
+}
+
+function showProductPage(app: HTMLElement, productId: string) {
+  initializeReactComponent(app);
+  
+  // Load the ComponentsWrapper and register it
+  import('../src/site/widgets/custom-elements/components-wrapper/element.tsx')
+    .then((module) => {
+      const CustomElement = module.default;
+      
+      // Register the custom element if not already registered
+      const tagName = 'components-wrapper-element';
+      if (!customElements.get(tagName)) {
+        customElements.define(tagName, CustomElement);
+      }
+      
+      if (reactRoot) {
+        // Clear previous content and create new element
+        const container = document.getElementById('react-root');
+        if (container) {
+          container.innerHTML = '';
+          
+          // Create and configure the element
+          const element = document.createElement(tagName) as any;
+          element.component = 'page';
+          element.productId = productId;
+          
+          // Append directly to container
+          container.appendChild(element);
+        }
+      }
+    });
 }
 
 
@@ -122,6 +176,9 @@ document.addEventListener('click', (e) => {
 
 // Handle back/forward
 window.addEventListener('popstate', router);
+
+// Handle custom navigate events
+window.addEventListener('navigate', router);
 
 // Initial route
 router();
