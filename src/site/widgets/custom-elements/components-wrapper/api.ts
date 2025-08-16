@@ -43,19 +43,24 @@ export interface CatalogResponse<TProduct> {
   total?: number;
 }
 
-const BASE_URL = 'https://novaromemasync.fly.dev';
+const BASE_URL = 'https://novaromema-public.fly.dev';
 
 export class CatalogAPI {
   static async fetchProducts(
     offset: number = 0, 
     limit: number = 25, 
-    returnTotal: boolean = false
+    returnTotal: boolean = false,
+    formats?: string
   ): Promise<CatalogResponse<PartialProduct>> {
-    const url = new URL(`${BASE_URL}/catalog`);
+    const url = new URL(`${BASE_URL}/products`);
     url.searchParams.set('limit', limit.toString());
     url.searchParams.set('offset', offset.toString());
     url.searchParams.set('returnTotal', returnTotal.toString());
     url.searchParams.set('partial', 'true');
+    
+    if (formats) {
+      url.searchParams.set('formats', formats);
+    }
 
     try {
       const response = await fetch(url.toString());
@@ -98,7 +103,7 @@ export class CatalogAPI {
   }
 
   static async fetchProductDetails(productId: string): Promise<FullProduct> {
-    const url = new URL(`${BASE_URL}/catalog`);
+    const url = new URL(`${BASE_URL}/products`);
     url.searchParams.set('id', productId);
 
     try {

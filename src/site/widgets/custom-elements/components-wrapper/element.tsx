@@ -32,23 +32,30 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
   }, [productData]);
 
   const renderComponent = () => {
+    console.log('🔧 Rendering component:', component);
     switch (component) {
       case 'home':
+        console.log('🏠 Rendering HomePage');
         return <HomePage />;
       case 'card':
         if (product) {
+          console.log('🃏 Rendering ProductCard');
           return <ProductCard product={product} />;
         }
+        console.log('❌ No product data provided for ProductCard');
         return <div>No product data provided for ProductCard</div>;
         
       case 'page':
         if (productId) {
+          console.log('📄 Rendering ProductPage for ID:', productId);
           return <ProductPage productId={productId} />;
         }
+        console.log('❌ No product ID provided for ProductPage');
         return <div>No product ID provided for ProductPage</div>;
         
       case 'gallery':
       default:
+        console.log('🖼️ Rendering ProductGallery');
         return <ProductGallery />;
     }
   };

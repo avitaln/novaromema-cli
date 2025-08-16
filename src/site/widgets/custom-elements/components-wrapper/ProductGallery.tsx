@@ -3,50 +3,23 @@ import { CatalogAPI, type PartialProduct } from './api';
 import { ProductCard } from './ProductCard';
 import styles from './element.module.css';
 
-// Global state for product cache
-interface ProductCache {
-  products: PartialProduct[];
-  total: number | null;
-  hasMore: boolean;
-  lastOffset: number;
-}
-
-const CACHE_KEY = 'productGalleryCache';
-let globalProductCache: ProductCache | null = null;
-
-// Helper functions for cache management
-const saveToCache = (cache: ProductCache) => {
-  globalProductCache = { ...cache };
-  sessionStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-};
-
-const loadFromCache = (): ProductCache | null => {
-  if (globalProductCache) {
-    return globalProductCache;
-  }
-  
-  try {
-    const cached = sessionStorage.getItem(CACHE_KEY);
-    if (cached) {
-      globalProductCache = JSON.parse(cached);
-      return globalProductCache;
+// Clear all existing caches on component load
+const clearAllCaches = () => {
+  // Clear all product gallery related caches
+  const keysToRemove = [];
+  for (let i = 0; i < sessionStorage.length; i++) {
+    const key = sessionStorage.key(i);
+    if (key && (key.includes('productGalleryCache') || key.includes('galleryScrollPosition'))) {
+      keysToRemove.push(key);
     }
-  } catch (error) {
-    console.warn('Failed to load product cache:', error);
   }
-  return null;
-};
-
-const clearCache = () => {
-  globalProductCache = null;
-  sessionStorage.removeItem(CACHE_KEY);
+  keysToRemove.forEach(key => sessionStorage.removeItem(key));
+  console.log('🧹 Cleared all gallery caches:', keysToRemove);
 };
 
 // Expose cache management functions globally for debugging
 (window as any).productCacheUtils = {
-  clearCache,
-  loadFromCache,
-  getCache: () => globalProductCache
+  clearAllCaches
 };
 
 interface ProductGalleryProps {
@@ -54,6 +27,8 @@ interface ProductGalleryProps {
 }
 
 export function ProductGallery({ className }: ProductGalleryProps) {
+  console.log('🖼️ ProductGallery component initialized');
+  
   const [products, setProducts] = useState<PartialProduct[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,23 +38,11 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isScrollRestored, setIsScrollRestored] = useState(false);
   
-  // Pre-check if we need to restore scroll to avoid flickering
-  const shouldRestoreScroll = !isInitialLoad && !isScrollRestored && sessionStorage.getItem('galleryScrollPosition');
+  // Get current path for route-based logic
+  const currentPath = window.location.pathname;
 
   const handleImageClick = (product: PartialProduct) => {
     console.log('Product clicked:', product.id);
-    
-    // Save current scroll position
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    sessionStorage.setItem('galleryScrollPosition', scrollPosition.toString());
-    
-    // Save current state to cache
-    saveToCache({
-      products,
-      total,
-      hasMore,
-      lastOffset: products.length
-    });
     
     // Navigate to product page
     window.history.pushState({}, '', `/product/${product.id}`);
@@ -95,14 +58,6 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   };
 
   const handleAddToCart = (product: PartialProduct) => {
-    // Update cache when product is modified (if needed)
-    saveToCache({
-      products,
-      total,
-      hasMore,
-      lastOffset: products.length
-    });
-    
     // Dispatch custom event for add to cart
     const event = new CustomEvent('addToCart', {
       detail: { product },
@@ -112,31 +67,33 @@ export function ProductGallery({ className }: ProductGalleryProps) {
     console.log('Adding to cart:', product);
   };
 
-  const loadMoreProducts = useCallback(async (isInitial: boolean = false, forceRefresh: boolean = false) => {
+  const loadMoreProducts = useCallback(async (isInitial: boolean = false) => {
     if (loading || (!hasMore && !isInitial)) return;
 
-    // Check cache on initial load
-    if (isInitial && !forceRefresh) {
-      const cachedData = loadFromCache();
-      if (cachedData && cachedData.products.length > 0) {
-        console.log('Loading products from cache:', cachedData.products.length, 'products');
-        startTransition(() => {
-          setProducts(cachedData.products);
-          setTotal(cachedData.total);
-          setHasMore(cachedData.hasMore);
-          // Set initial load to false after a small delay to ensure proper rendering
-          setTimeout(() => setIsInitialLoad(false), 50);
-        });
-        return;
-      }
+    // Clear caches on initial load
+    if (isInitial) {
+      clearAllCaches();
     }
+
+    // Get format filter based on current route
+    const currentPath = window.location.pathname;
+    let formats: string | undefined;
+    if (currentPath === '/cd') {
+      formats = '1';
+    } else if (currentPath === '/vinyl') {
+      formats = '2,3,4,5,6';
+    }
+
+    console.log('🔄 Loading products for route:', currentPath, 'with formats:', formats);
 
     setLoading(true);
     setError(null);
 
     try {
       const offset = isInitial ? 0 : products.length;
-      const response = await CatalogAPI.fetchProducts(offset, 25, isInitial);
+      const response = await CatalogAPI.fetchProducts(offset, 25, isInitial, formats);
+      
+      console.log('✅ Loaded products:', response.products.length, 'total available:', response.total);
       
       startTransition(() => {
         if (isInitial) {
@@ -145,25 +102,9 @@ export function ProductGallery({ className }: ProductGalleryProps) {
             setTotal(response.total);
           }
           setIsInitialLoad(false);
-          
-          // Save initial load to cache
-          saveToCache({
-            products: response.products,
-            total: response.total || null,
-            hasMore: response.products.length >= 25,
-            lastOffset: response.products.length
-          });
         } else {
           const newProducts = [...products, ...response.products];
           setProducts(newProducts);
-          
-          // Update cache with new products
-          saveToCache({
-            products: newProducts,
-            total,
-            hasMore: response.products.length >= 25,
-            lastOffset: newProducts.length
-          });
         }
         
         // Check if we have more products to load
@@ -175,6 +116,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
         }
       });
     } catch (err) {
+      console.error('❌ Failed to load products:', err);
       setError(err instanceof Error ? err.message : 'Failed to load products');
     } finally {
       setLoading(false);
@@ -186,66 +128,26 @@ export function ProductGallery({ className }: ProductGalleryProps) {
     loadMoreProducts(true);
   }, []);
 
-  // Restore scroll position after products are loaded and rendered
+  // Reload when route changes
   useEffect(() => {
-    const savedScrollPosition = sessionStorage.getItem('galleryScrollPosition');
-    if (savedScrollPosition && products.length > 0 && shouldRestoreScroll) {
-      const scrollPosition = parseInt(savedScrollPosition, 10);
-      console.log('🔄 Starting scroll restoration to position:', scrollPosition);
-      
-      // Wait for DOM to render and images to load
-      const restoreScroll = () => {
-        // Use double requestAnimationFrame for better timing
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            window.scrollTo({
-              top: scrollPosition,
-              behavior: 'auto'
-            });
-            sessionStorage.removeItem('galleryScrollPosition');
-            setIsScrollRestored(true);
-            console.log('✅ Scroll position restored to:', scrollPosition);
-          });
-        });
-      };
-
-      // Wait for images to load or timeout after 500ms (reduced timeout)
-      const images = document.querySelectorAll(`.${styles.productGrid} img`);
-      if (images.length === 0) {
-        restoreScroll();
-        return;
-      }
-
-      let loadedImages = 0;
-      let timeoutId: number;
-      
-      const checkComplete = () => {
-        loadedImages++;
-        if (loadedImages >= Math.min(images.length, 6)) { // Reduced to 6 images
-          clearTimeout(timeoutId);
-          restoreScroll();
-        }
-      };
-
-      // Timeout for restoration with visible effect
-      timeoutId = window.setTimeout(() => {
-        restoreScroll();
-      }, 800);
-
-      // Listen for image loads
-      images.forEach((img, index) => {
-        if (index < 6) { // Only check first 6 images
-          const imgElement = img as HTMLImageElement;
-          if (imgElement.complete) {
-            checkComplete();
-          } else {
-            imgElement.addEventListener('load', checkComplete, { once: true });
-            imgElement.addEventListener('error', checkComplete, { once: true });
-          }
-        }
-      });
+    if (!isInitialLoad) {
+      console.log('🔄 Route changed to:', currentPath, 'reloading products...');
+      // Clear existing products and reload for new format
+      setProducts([]);
+      setTotal(null);
+      setHasMore(true);
+      setIsScrollRestored(false);
+      loadMoreProducts(true);
     }
-  }, [products, shouldRestoreScroll]);
+  }, [currentPath]);
+
+  // Simple scroll restoration (will be enhanced later)
+  useEffect(() => {
+    // For now, just scroll to top on route change
+    if (!isInitialLoad) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+  }, [currentPath, isInitialLoad]);
 
   // Infinite scroll handler
   useEffect(() => {
@@ -268,7 +170,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
         <div className={styles.error}>
           <p>שגיאה בטעינת המוצרים: {error}</p>
           <button 
-            onClick={() => loadMoreProducts(true, true)}
+            onClick={() => loadMoreProducts(true)}
             className={styles.retryButton}
           >
             נסה שוב
@@ -280,15 +182,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
 
   return (
     <div className={`${styles.productGallery} ${className || ''}`}>
-      <div 
-        className={styles.productGrid}
-        style={{
-          opacity: shouldRestoreScroll ? 0.1 : 1,
-          transform: shouldRestoreScroll ? 'translateY(10px)' : 'translateY(0)',
-          transition: 'opacity 0.3s ease-in-out, transform 0.3s ease-in-out',
-          filter: shouldRestoreScroll ? 'blur(2px)' : 'blur(0)'
-        }}
-      >
+      <div className={styles.productGrid}>
         {products.map((product) => (
           <ProductCard 
             key={product.id} 
@@ -298,14 +192,6 @@ export function ProductGallery({ className }: ProductGalleryProps) {
           />
         ))}
       </div>
-
-      {/* Show loading overlay during scroll restoration */}
-      {shouldRestoreScroll && (
-        <div className={styles.scrollRestorationOverlay}>
-          <div className={styles.spinner}></div>
-          <p>משחזר מיקום...</p>
-        </div>
-      )}
 
       {(loading || isPending) && (
         <div className={styles.loadingSpinner}>

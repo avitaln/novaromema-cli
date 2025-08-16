@@ -60,8 +60,8 @@ export function HomePage() {
 
   const buttonLinks = useMemo(() => {
     return [
-      { title: 'לכל הדיסקים', href: '/discs' },
-      { title: 'לכל התקליטים', href: '/records' },
+      { title: 'לכל הדיסקים', href: '/cd' },
+      { title: 'לכל התקליטים', href: '/vinyl' },
     ];
   }, []);
 

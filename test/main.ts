@@ -34,7 +34,7 @@ function router() {
     }
   });
   
-  if (path === '/gallery') {
+  if (path === '/gallery' || path === '/vinyl' || path === '/cd') {
     showReactComponent(app);
   } else if (path.startsWith('/product/')) {
     const productId = path.split('/product/')[1];
@@ -81,7 +81,8 @@ function initializeReactComponent(app: HTMLElement) {
       <div class="header">
         <div class="nav">
           <a href="/" id="home-link">Home</a>
-          <a href="/gallery" id="gallery-link">Gallery</a>
+          <a href="/cd" id="cd-link">CD</a>
+          <a href="/vinyl" id="vinyl-link">Vinyl</a>
         </div>
         <div class="header-title">Nova Roma Gallery</div>
         <div class="version">v26</div>

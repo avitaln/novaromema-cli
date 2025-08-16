@@ -36,7 +36,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls to avoid CORS issues (generic for all endpoints under /api)
       '/api': {
-        target: 'https://novaromemasync.fly.dev',
+        target: 'https://novaromema-public.fly.dev',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, _options) => {
@@ -48,6 +48,38 @@ export default defineConfig({
           });
           proxy.on('proxyRes', (proxyRes, req, _res) => {
             console.log('Received Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
+      // Proxy home endpoint
+      '/home': {
+        target: 'https://novaromema-public.fly.dev',
+        changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('home proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Home Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Home Response from the Target:', proxyRes.statusCode, req.url);
+          });
+        },
+      },
+      // Proxy products endpoint
+      '/products': {
+        target: 'https://novaromema-public.fly.dev',
+        changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('products proxy error', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            console.log('Sending Products Request to the Target:', req.method, req.url);
+          });
+          proxy.on('proxyRes', (proxyRes, req, _res) => {
+            console.log('Received Products Response from the Target:', proxyRes.statusCode, req.url);
           });
         },
       }
