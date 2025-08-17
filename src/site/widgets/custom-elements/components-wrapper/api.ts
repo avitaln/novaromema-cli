@@ -45,31 +45,103 @@ export interface CatalogResponse<TProduct> {
 
 const BASE_URL = 'https://novaromema-public.fly.dev';
 
+export interface ProductFilter {
+  limit?: number;
+  offset?: number;
+  returnTotal?: boolean;
+  partial?: boolean;
+  sort?: 'pricelow' | 'pricehigh' | 'artist' | 'title';
+  name?: string;
+  artist?: string;
+  title?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  formats?: number[];
+  specials?: number[];
+  genres?: number[];
+  isNew?: boolean;
+  country?: string;
+}
+
 export class CatalogAPI {
+  // Format mappings based on API guide
+  static readonly FORMAT_MAPPINGS = {
+    'CD': 1,
+    'LP': 2,
+    '10"': 3,
+    '12"': 4,
+    '7"': 5,
+    'Cassette': 6
+  } as const;
+
+  // Special category mappings based on API guide
+  static readonly SPECIAL_MAPPINGS = {
+    'preorder': 1,
+    'recommended': 2,
+    'classics': 3,
+    'new': 4,
+    'rare': 5
+  } as const;
+
+  // Hebrew to English format mapping for UI
+  static readonly HEBREW_FORMAT_MAPPINGS = {
+    'LP': 2,
+    'CD': 1,
+    'Cassette': 6,
+    'Digital': 1 // Assuming digital maps to CD for now
+  } as const;
+
+  // Helper function to create base64 encoded filter URL
+  static createFilterUrl(filterObject: ProductFilter): string {
+    const encodedFilter = btoa(JSON.stringify(filterObject));
+    return `${BASE_URL}/products?filter=${encodedFilter}`;
+  }
+
   static async fetchProducts(
     offset: number = 0, 
     limit: number = 25, 
     returnTotal: boolean = false,
     formats?: string
   ): Promise<CatalogResponse<PartialProduct>> {
-    const url = new URL(`${BASE_URL}/products`);
-    url.searchParams.set('limit', limit.toString());
-    url.searchParams.set('offset', offset.toString());
-    url.searchParams.set('returnTotal', returnTotal.toString());
-    url.searchParams.set('partial', 'true');
-    
+    // Convert old format parameter to new filter format
+    const filter: ProductFilter = {
+      limit,
+      offset,
+      returnTotal,
+      partial: true
+    };
+
     if (formats) {
-      url.searchParams.set('formats', formats);
+      // Convert comma-separated format string to array of numbers
+      filter.formats = formats.split(',').map(f => parseInt(f.trim())).filter(f => !isNaN(f));
     }
 
+    const url = this.createFilterUrl(filter);
+
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return await response.json();
     } catch (error) {
       console.error('Failed to fetch products:', error);
+      throw error;
+    }
+  }
+
+  // New method for advanced filtering with all options
+  static async fetchProductsWithFilter(filter: ProductFilter): Promise<CatalogResponse<PartialProduct>> {
+    const url = this.createFilterUrl(filter);
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch products with filter:', error);
       throw error;
     }
   }
