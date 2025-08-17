@@ -43,7 +43,9 @@ export interface CatalogResponse<TProduct> {
   total?: number;
 }
 
-const BASE_URL = 'https://novaromema-public.fly.dev';
+// Switch between localhost and production
+const IS_LOCAL = true; // Set to false for production
+const BASE_URL = IS_LOCAL ? 'http://localhost:8080' : 'https://novaromema-public.fly.dev';
 
 export interface ProductFilter {
   limit?: number;

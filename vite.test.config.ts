@@ -2,6 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
+// Switch between localhost and production
+const IS_LOCAL = true; // Set to false for production
+const API_TARGET = IS_LOCAL ? 'http://localhost:8080' : 'https://novaromema-public.fly.dev';
+
 export default defineConfig({
   plugins: [
     react({
@@ -36,7 +40,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls to avoid CORS issues (generic for all endpoints under /api)
       '/api': {
-        target: 'https://novaromema-public.fly.dev',
+        target: API_TARGET,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         configure: (proxy, _options) => {
@@ -53,7 +57,7 @@ export default defineConfig({
       },
       // Proxy home endpoint
       '/home': {
-        target: 'https://novaromema-public.fly.dev',
+        target: API_TARGET,
         changeOrigin: true,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
@@ -69,7 +73,7 @@ export default defineConfig({
       },
       // Proxy products endpoint
       '/products': {
-        target: 'https://novaromema-public.fly.dev',
+        target: API_TARGET,
         changeOrigin: true,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
