@@ -286,6 +286,8 @@ export function ProductGallery({
 
   const handleImageClick = (product: PartialProduct) => {
     console.log('Product clicked:', product.id);
+    // Save scroll position before navigating away
+    onScrollPositionChange(window.scrollY);
     onProductClick(product);
   };
 
@@ -307,10 +309,7 @@ export function ProductGallery({
     if (now - lastScrollEventRef.current < 16) return; // ~60fps
     lastScrollEventRef.current = now;
     
-    if (!galleryRef.current || stopLoading || !hasMore) return;
-    
-    // Save current scroll position
-    onScrollPositionChange(window.scrollY);
+      if (!galleryRef.current || stopLoading || !hasMore) return;
     
     // Use document height approach for more reliable detection
     const scrollTop = window.scrollY;
@@ -336,7 +335,7 @@ export function ProductGallery({
       console.log('❌ Canceling queued load - user scrolled away from bottom');
       queuedLoadRef.current = false;
     }
-  }, [products.length, stopLoading, hasMore, onLoadMore, onScrollPositionChange]);
+  }, [products.length, stopLoading, hasMore, onLoadMore]);
 
   // Process queue when loading completes
   useEffect(() => {
@@ -398,14 +397,7 @@ export function ProductGallery({
     };
   }, [handleScroll]);
 
-  // Restore scroll position when needed
-  useEffect(() => {
-    if (scrollPosition > 0) {
-      setTimeout(() => {
-        window.scrollTo(0, scrollPosition);
-      }, 100);
-    }
-  }, [products.length]); // When products change, check if we need to restore scroll
+  // Note: Scroll restoration is handled by parent element.tsx when navigating back from product page
 
   if (error && products.length === 0) {
     return (

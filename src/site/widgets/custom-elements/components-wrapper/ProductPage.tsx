@@ -14,15 +14,8 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
 
   // Scroll to top when component mounts
   useEffect(() => {
-    // Immediate scroll to prevent flickering
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    
-    // Also use the standard method as backup
-    window.scrollTo({
-      top: 0,
-      behavior: 'auto'
-    });
+    // Use simple scroll method that doesn't interfere with smooth scrolling
+    window.scrollTo(0, 0);
   }, []);
 
   const imageUrl = useMemo(() => {
