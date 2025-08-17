@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useCallback, useTransition } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
+import React, { useState, useEffect, useCallback, useTransition, useRef } from 'react';
 import { CatalogAPI, type PartialProduct, type ProductFilter } from './api';
 import { ProductCard } from './ProductCard';
 import styles from './element.module.css';
@@ -71,6 +70,10 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   const [isPending, startTransition] = useTransition();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [scrollPosition, setScrollPosition] = useState<number>(0);
+  const [stopLoading, setStopLoading] = useState(false);
+  const [lastScrollTime, setLastScrollTime] = useState<number>(0);
+  const galleryRef = useRef<HTMLDivElement>(null);
   const [filters, setFilters] = useState<FilterOptions>({
     search: '',
     genres: [],
@@ -84,6 +87,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   // Get current path for route-based logic
   const currentPath = window.location.pathname;
   const PRODUCTS_PER_PAGE = 100;
+  const MAX_INFINITE_SCROLL_PRODUCTS = 500;
 
   // Parse price range from Hebrew text to min/max values
   const parsePriceRange = (priceRange: string): { minPrice?: number; maxPrice?: number } => {
@@ -339,6 +343,9 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   const handleImageClick = (product: PartialProduct) => {
     console.log('Product clicked:', product.id);
     
+    // Save scroll position before navigation (like reference implementation)
+    setScrollPosition(window.scrollY);
+    
     // Navigate to product page
     window.history.pushState({}, '', `/product/${product.id}`);
     
@@ -362,37 +369,14 @@ export function ProductGallery({ className }: ProductGalleryProps) {
     console.log('Adding to cart:', product);
   };
 
-  const handleNextPage = async () => {
-    const nextPage = currentPage + 1;
-    
-    // Show loading state
+  const handleNextPage = () => {
+    // Like reference implementation: clear items, increment page, scroll to top, load more
+    setProducts([]);
+    setCurrentPage(prev => prev + 1);
+    window.scrollTo(0, 0);
     setLoading(true);
-    setError(null);
-    
-    try {
-      // Load next page products with current filters
-      const filter = buildApiFilter(true, nextPage);
-      const response = await CatalogAPI.fetchProductsWithFilter(filter);
-      
-      console.log('✅ Loaded next page products:', response.products.length, 'for page:', nextPage);
-      
-      // Replace products directly (no flicker)
-      startTransition(() => {
-        setProducts(response.products);
-        setCurrentPage(nextPage);
-        // Don't update total on next page navigation - we already have it from initial load
-        setHasMore(response.products.length >= 25 && response.products.length < PRODUCTS_PER_PAGE);
-      });
-      
-      // Scroll to top after products are set
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
-    } catch (err) {
-      console.error('❌ Failed to load next page:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load next page');
-    } finally {
-      setLoading(false);
-    }
+    setStopLoading(false);
+    loadMoreProducts(true);
   };
 
   // Build API filter from current UI filters and route
@@ -446,7 +430,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   }, [filters, currentPath, products.length, currentPage]);
 
   const loadMoreProducts = useCallback(async (isInitial: boolean = false) => {
-    if (loading || (!hasMore && !isInitial)) return;
+    if (loading || (stopLoading && !isInitial)) return;
 
     console.log('🔄 Loading products with filters:', filters);
 
@@ -468,21 +452,24 @@ export function ProductGallery({ className }: ProductGalleryProps) {
             setTotal(response.total);
           }
           setIsInitialLoad(false);
+          setStopLoading(false);
         } else {
-          const newProducts = [...products, ...response.products];
-          setProducts(newProducts);
+          if (response.products.length > 0) {
+            const newProducts = [...products, ...response.products];
+            setProducts(newProducts);
+          } else {
+            // No more products to load
+            setStopLoading(true);
+          }
         }
         
-        // Check if we have more products to load
-        const newTotal = (isInitial ? 0 : products.length) + response.products.length;
-        const currentPageProductCount = isInitial ? response.products.length : products.length + response.products.length;
+        // Check if we should stop loading (reached limit or no more products)
+        const currentProductCount = isInitial ? response.products.length : products.length + response.products.length;
         
-        if (response.total && newTotal >= response.total) {
-          setHasMore(false);
-        } else if (response.products.length < 25) {
-          setHasMore(false);
-        } else if (currentPageProductCount >= PRODUCTS_PER_PAGE) {
-          setHasMore(false); // Stop infinite scroll at 100 products per page
+        if (response.products.length === 0) {
+          setStopLoading(true);
+        } else if (currentProductCount >= MAX_INFINITE_SCROLL_PRODUCTS) {
+          setStopLoading(true);
         }
       });
     } catch (err) {
@@ -491,7 +478,31 @@ export function ProductGallery({ className }: ProductGalleryProps) {
     } finally {
       setLoading(false);
     }
-  }, [buildApiFilter, products.length, loading, hasMore]);
+  }, [buildApiFilter, products.length, loading, stopLoading]);
+
+  // Scroll handler for infinite scroll (like reference implementation)
+  const handleScroll = useCallback(() => {
+    if (!galleryRef.current) return;
+    
+    const rect = galleryRef.current.getBoundingClientRect();
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const elementBottom = rect.height;
+    
+    // Check if we should load more (within 500px of bottom, under 500 items, not already loading)
+    if (scrollBottom > elementBottom - 500 && products.length < MAX_INFINITE_SCROLL_PRODUCTS && !stopLoading && !loading) {
+      const now = Date.now();
+      setLastScrollTime(now);
+      
+      // Add delay if too soon (like reference implementation)
+      if (now - lastScrollTime < 4000) {
+        setTimeout(() => {
+          loadMoreProducts(false);
+        }, 3000);
+      } else {
+        loadMoreProducts(false);
+      }
+    }
+  }, [products.length, stopLoading, loading, lastScrollTime, loadMoreProducts]);
 
   // Initial load
   useEffect(() => {
@@ -506,7 +517,7 @@ export function ProductGallery({ className }: ProductGalleryProps) {
       setCurrentPage(1);
       setProducts([]);
       setTotal(null);
-      setHasMore(true);
+      setStopLoading(false);
       loadMoreProducts(true);
     }
   }, [currentPath]);
@@ -519,10 +530,28 @@ export function ProductGallery({ className }: ProductGalleryProps) {
       setCurrentPage(1);
       setProducts([]);
       setTotal(null);
-      setHasMore(true);
+      setStopLoading(false);
       loadMoreProducts(true);
     }
   }, [filters]);
+
+  // Set up scroll event listener
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [handleScroll]);
+
+  // Restore scroll position when coming back from product page
+  useEffect(() => {
+    if (scrollPosition > 0 && !isInitialLoad && products.length > 0) {
+      setTimeout(() => {
+        window.scrollTo(0, scrollPosition);
+        setScrollPosition(0); // Clear saved position
+      }, 100);
+    }
+  }, [scrollPosition, isInitialLoad, products.length]);
 
   if (error && products.length === 0) {
     return (
@@ -541,53 +570,49 @@ export function ProductGallery({ className }: ProductGalleryProps) {
   }
 
   return (
-    <div className={`${styles.productGallery} ${className || ''}`}>
+    <div ref={galleryRef} className={`${styles.productGallery} ${className || ''}`}>
       <FilterHeader />
-        <InfiniteScroll
-          dataLength={products.length}
-          next={() => loadMoreProducts(false)}
-          hasMore={hasMore}
-          loader={
-            <div className={styles.loadingSpinner}>
-              <div className={styles.spinner}></div>
-              <p>טוען מוצרים...</p>
-            </div>
-          }
-          endMessage={
-            products.length >= PRODUCTS_PER_PAGE && total && ((currentPage - 1) * PRODUCTS_PER_PAGE + products.length) < total ? (
-              <div className={styles.paginationButton}>
-                <button onClick={handleNextPage} className={styles.nextPageButton}>
-                  עבור לדף {currentPage + 1} ←
-                </button>
-              </div>
-            ) : null
-          }
-          scrollThreshold={0.9}
-          style={{ overflow: 'visible' }}
-        >
-          <div className={styles.productGrid}>
-            {products.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-                onImageClick={handleImageClick}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        </InfiniteScroll>
-
-        {error && products.length > 0 && (
-          <div className={styles.loadMoreError}>
-            <p>שגיאה בטעינת מוצרים נוספים: {error}</p>
-            <button 
-              onClick={() => loadMoreProducts()}
-              className={styles.retryButton}
-            >
-              נסה שוב
-            </button>
-          </div>
-        )}
+      
+      <div className={styles.productGrid}>
+        {products.map((product) => (
+          <ProductCard 
+            key={product.id} 
+            product={product}
+            onImageClick={handleImageClick}
+            onAddToCart={handleAddToCart}
+          />
+        ))}
       </div>
-    );
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className={styles.loadingSpinner}>
+          <div className={styles.spinner}></div>
+          <p>טוען מוצרים...</p>
+        </div>
+      )}
+
+      {/* Next page button - show when we have 500 products and not stopped loading */}
+      {products.length >= MAX_INFINITE_SCROLL_PRODUCTS && !stopLoading && (
+        <div className={styles.paginationButton}>
+          <button onClick={handleNextPage} className={styles.nextPageButton}>
+            לדף {currentPage + 1} ←
+          </button>
+        </div>
+      )}
+
+      {/* Error handling */}
+      {error && products.length > 0 && (
+        <div className={styles.loadMoreError}>
+          <p>שגיאה בטעינת מוצרים נוספים: {error}</p>
+          <button 
+            onClick={() => loadMoreProducts()}
+            className={styles.retryButton}
+          >
+            נסה שוב
+          </button>
+        </div>
+      )}
+    </div>
+  );
 } 
