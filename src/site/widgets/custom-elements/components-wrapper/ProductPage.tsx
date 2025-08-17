@@ -1,36 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { CatalogAPI, type FullProduct } from './api';
 import styles from './element.module.css';
 
 interface ProductPageProps {
-  productId: string;
+  product: FullProduct | null;
+  loading: boolean;
+  error: string | null;
   onClose?: () => void;
   onAddToCart?: (product: FullProduct) => void;
 }
 
-export function ProductPage({ productId, onClose, onAddToCart }: ProductPageProps) {
-  const [product, setProduct] = useState<FullProduct | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const productData = await CatalogAPI.fetchProductDetails(productId);
-        setProduct(productData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load product');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (productId) {
-      fetchProduct();
-    }
-  }, [productId]);
+export function ProductPage({ product, loading, error, onClose, onAddToCart }: ProductPageProps) {
 
   // Scroll to top when component mounts
   useEffect(() => {

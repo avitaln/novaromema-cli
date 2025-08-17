@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 
 import styles from './element.module.css';
-import { CatalogAPI, PartialProduct } from './api';
+import { PartialProduct } from './api';
 import { ProductCard } from './ProductCard';
 
 interface HomeSection {
@@ -14,49 +14,18 @@ interface HomeSection {
   buttonTitle?: string;
 }
 
-export function HomePage() {
-  const [sections, setSections] = useState<HomeSection[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+interface HomePageProps {
+  sections: HomeSection[];
+  loading: boolean;
+  error: string | null;
+  onProductClick: (product: PartialProduct) => void;
+  onNavigateToGallery?: () => void;
+}
 
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await CatalogAPI.fetchHome();
-        setSections(data);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Failed to load home');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
-
+export function HomePage({ sections, loading, error, onProductClick, onNavigateToGallery }: HomePageProps) {
   const handleCardClick = (product: PartialProduct) => {
-    const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
-    sessionStorage.setItem('homeScrollPosition', scrollPosition.toString());
-
-    window.history.pushState({}, '', `/product/${product.id}`);
-    if ((window as any).router) {
-      (window as any).router();
-    } else {
-      const event = new CustomEvent('navigate');
-      window.dispatchEvent(event);
-    }
+    onProductClick(product);
   };
-
-  useEffect(() => {
-    const saved = sessionStorage.getItem('homeScrollPosition');
-    if (saved) {
-      setTimeout(() => {
-        window.scrollTo({ top: Number(saved), behavior: 'auto' });
-      }, 0);
-      sessionStorage.removeItem('homeScrollPosition');
-    }
-  }, []);
 
   const buttonLinks = useMemo(() => {
     return [
@@ -139,5 +108,3 @@ export function HomePage() {
 }
 
 export default HomePage;
-
-
