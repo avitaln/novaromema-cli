@@ -19,3 +19,13 @@ In the project directory, you can run:
 ```console
 npm run dev
 ```
+
+## bugs
+[ ] display short format in cards
+[ ] link should be slug and not sku
+[ ] inside product page - details are missing
+[ ]
+[ ]
+[ ]
+[ ]
+

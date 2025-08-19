@@ -402,12 +402,12 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       navigation: { currentView: previousView }
     }));
     
-    // Restore scroll position using non-interfering method
+    // Restore scroll position instantly
     requestAnimationFrame(() => {
       const scrollPos = previousView === 'home' 
         ? appState.homeData.scrollPosition 
         : appState.galleryData.scrollPosition;
-      window.scrollTo(0, scrollPos); // Use simple method that doesn't interfere with smooth scrolling
+      window.scrollTo(0, scrollPos);
     });
   }, [appState.navigation.previousView, appState.homeData.scrollPosition, appState.galleryData.scrollPosition]);
 

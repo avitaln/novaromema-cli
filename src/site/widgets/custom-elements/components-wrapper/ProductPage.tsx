@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CatalogAPI, type FullProduct } from './api';
 import styles from './element.module.css';
 
@@ -11,17 +11,33 @@ interface ProductPageProps {
 }
 
 export function ProductPage({ product, loading, error, onClose, onAddToCart }: ProductPageProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  // Scroll to top when component mounts
+  // Scroll to top when component mounts instantly
   useEffect(() => {
-    // Use simple scroll method that doesn't interfere with smooth scrolling
     window.scrollTo(0, 0);
   }, []);
+
+  // Reset image loading state when product changes
+  useEffect(() => {
+    setImageLoaded(false);
+    setImageError(false);
+  }, [product?.id]);
 
   const imageUrl = useMemo(() => {
     if (!product?.image) return '';
     return CatalogAPI.buildImageUrl(product.image, 500, 500);
   }, [product?.image]);
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoaded(true);
+  };
 
   const handleClose = () => {
     if (onClose) {
@@ -87,11 +103,21 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
     <div className={styles.productPageContainer}>
       <div className={styles.mainPopup}>
         <div className={styles.imageCont}>
+          {!imageLoaded && !imageError && imageUrl && (
+            <div className={styles.imageSkeletonPopup}></div>
+          )}
           <img 
-            className={styles.imagePopup} 
+            className={`${styles.imagePopup} ${imageLoaded ? styles.imageLoaded : styles.imageLoading} ${imageError ? styles.imageError : ''}`}
             src={imageUrl} 
             alt={`${product.artist} - ${product.title}`}
+            onLoad={handleImageLoad}
+            onError={handleImageError}
           />
+          {imageError && (
+            <div className={styles.imagePlaceholderPopup}>
+              <span>תמונה לא זמינה</span>
+            </div>
+          )}
         </div>
         
         <div className={styles.detailsCont}>

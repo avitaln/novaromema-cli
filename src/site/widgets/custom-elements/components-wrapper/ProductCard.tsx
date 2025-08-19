@@ -10,6 +10,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
@@ -17,6 +18,11 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   
   const handleImageError = () => {
     setImageError(true);
+    setImageLoaded(true);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoaded(true);
   };
 
   const handleImageClick = () => {
@@ -55,13 +61,22 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
         onClick={handleImageClick}
         onKeyUp={(e) => handleKeyUp(e, 'image')}
       >
+        {!imageLoaded && !imageError && (
+          <div className={styles.imageSkeleton}></div>
+        )}
         <img 
-          className={styles.productImage}
+          className={`${styles.productImage} ${imageLoaded ? styles.imageLoaded : styles.imageLoading} ${imageError ? styles.imageError : ''}`}
           src={imageUrl} 
           alt={`${product.artist} - ${product.title}`}
           loading="lazy"
           onError={handleImageError}
+          onLoad={handleImageLoad}
         />
+        {imageError && (
+          <div className={styles.imagePlaceholder}>
+            <span>תמונה לא זמינה</span>
+          </div>
+        )}
         {product.ribbon && (
           <div className={styles.ribbon}>
             <p>{product.ribbon}</p>
