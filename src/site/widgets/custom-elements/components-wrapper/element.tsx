@@ -250,8 +250,8 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
 
   // buildApiFilter function removed - logic inlined in fetchGalleryData to avoid circular dependency
 
-  const fetchGalleryData = useCallback(async (isInitial: boolean = false, pageOverride?: number, currentFilters?: FilterOptions) => {
-    const { galleryData } = appState;
+  const fetchGalleryData = useCallback(async (isInitial: boolean = false, pageOverride?: number, currentFilters?: FilterOptions, freshGalleryData?: typeof appState.galleryData) => {
+    const galleryData = freshGalleryData || appState.galleryData;
     const filtersToUse = currentFilters || galleryData.filters;
     
     if (galleryData.loading || (galleryData.stopLoading && !isInitial)) {
@@ -357,6 +357,8 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       console.log('🔍 API Filter:', { 
         offset: filter.offset, 
         limit: filter.limit, 
+        returnTotal: filter.returnTotal,
+        isInitial: isInitial,
         genreInFilter: filtersToUse.genre, 
         genresArray: filter.genres
       });
@@ -365,8 +367,9 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       const finalProductsCount = isInitial ? response.products.length : galleryData.products.length + response.products.length;
       console.log('✅ API Response:', {
         received: response.products.length,
-        totalAvailable: response.total,
+        totalFromAPI: response.total,
         isInitial,
+        returnedTotal: isInitial,
         finalProductsCount,
         willStopLoading: response.products.length === 0,
         willHaveMore: response.products.length > 0
@@ -394,7 +397,26 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
             
             return [...prev.galleryData.products, ...response.products];
           })(),
-          total: response.total !== undefined ? response.total : prev.galleryData.total,
+          total: (() => {
+            // ONLY use response.total on initial load (first page)
+            // ALWAYS ignore response.total on subsequent pages, regardless of value
+            let newTotal;
+            if (isInitial) {
+              newTotal = response.total !== undefined ? response.total : prev.galleryData.total;
+            } else {
+              // Infinite scroll: ALWAYS preserve previous total, ignore API response
+              newTotal = prev.galleryData.total;
+            }
+            
+            console.log('📊 Total handling:', {
+              responseTotal: response.total,
+              previousTotal: prev.galleryData.total,
+              finalTotal: newTotal,
+              isInitial,
+              logic: isInitial ? 'use-api-total' : 'ignore-api-preserve-previous'
+            });
+            return newTotal;
+          })(),
           loading: false,
           stopLoading: response.products.length === 0,
           hasMore: response.products.length > 0 // Re-enable infinite scroll when we have data
@@ -518,14 +540,18 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
   // ===== GALLERY SPECIFIC FUNCTIONS =====
   
   const handleGalleryLoadMore = useCallback(() => {
-    const { loading, products } = appState.galleryData;
-    if (loading) {
-      console.log('🚫 Load more blocked - already loading');
-      return;
-    }
-    console.log('📄 Load more triggered - current products:', products.length);
-    fetchGalleryData(false);
-  }, [fetchGalleryData, appState.galleryData]);
+    setAppState(prevState => {
+      const { loading, products } = prevState.galleryData;
+      if (loading) {
+        console.log('🚫 Load more blocked - already loading');
+        return prevState;
+      }
+      console.log('📄 Load more triggered - current products:', products.length);
+      // Pass fresh state to avoid stale closure in fetchGalleryData
+      setTimeout(() => fetchGalleryData(false, undefined, undefined, prevState.galleryData), 0);
+      return prevState;
+    });
+  }, [fetchGalleryData]);
 
   const handleGalleryFiltersChange = useCallback((newFilters: FilterOptions) => {
     console.log('🔍 Gallery filters changed:', newFilters);
@@ -561,7 +587,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       }
     }));
     // Fetch with new filters
-    setTimeout(() => fetchGalleryData(true, undefined, newFilters), 0);
+    setTimeout(() => fetchGalleryData(true, undefined, newFilters, undefined), 0);
   }, [fetchGalleryData]);
 
   const handleGalleryNextPage = useCallback(() => {
@@ -587,7 +613,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     
     // Load with specific page number with slight delay to avoid conflicts
     setTimeout(() => {
-      fetchGalleryData(true, nextPage);
+      fetchGalleryData(true, nextPage, undefined, undefined);
     }, 100);
   }, [appState.galleryData.currentPage, fetchGalleryData]);
 
@@ -603,7 +629,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       // Only initialize if hasMore is true AND we haven't fetched before (total === null) 
       // This prevents conflicts with filter changes which also reset products to []
       console.log('🎯 Initializing gallery data...');
-      fetchGalleryData(true);
+      fetchGalleryData(true, undefined, undefined, undefined);
     } else if (currentView === 'product' && appState.navigation.productId && !appState.productData.currentProduct && !appState.productData.loading) {
       fetchProductData(appState.navigation.productId);
     }
