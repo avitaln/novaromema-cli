@@ -338,15 +338,15 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     }
   }, [buildApiFilter]);
 
-  const fetchProductData = useCallback(async (productId: string) => {
-    console.log('📄 Fetching product data for:', productId);
+  const fetchProductData = useCallback(async (slug: string) => {
+    console.log('📄 Fetching product data for slug:', slug);
     setAppState(prev => ({
       ...prev,
       productData: { ...prev.productData, loading: true, error: null }
     }));
 
     try {
-      const product = await CatalogAPI.fetchProductDetails(productId);
+      const product = await CatalogAPI.fetchProductDetailsBySlug(slug);
       setAppState(prev => ({
         ...prev,
         productData: { 
@@ -369,8 +369,16 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
 
   // ===== NAVIGATION FUNCTIONS =====
   
-  const navigateToProduct = useCallback((productId: string, sourceView?: 'home' | 'gallery') => {
-    console.log('🔄 Navigating to product:', productId);
+  const navigateToProduct = useCallback((product: PartialProduct, sourceView?: 'home' | 'gallery') => {
+    if (!product.slug) {
+      console.error('❌ Product has no slug:', product);
+      return;
+    }
+    
+    console.log('🔄 Navigating to product slug:', product.slug);
+    
+    // Update browser URL (same format as ref/product-gallery.js)
+    window.history.pushState({ productPage: product.slug }, '', `/product-page/${product.slug}`);
     
     // Save current scroll position
     const currentScrollPosition = window.scrollY;
@@ -380,22 +388,26 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       setAppState(prev => ({
         ...prev,
         homeData: { ...prev.homeData, scrollPosition: currentScrollPosition },
-        navigation: { currentView: 'product', previousView: 'home', productId }
+        navigation: { currentView: 'product', previousView: 'home', productId: product.slug! }
       }));
     } else if (currentView === 'gallery') {
       setAppState(prev => ({
         ...prev,
         galleryData: { ...prev.galleryData, scrollPosition: currentScrollPosition },
-        navigation: { currentView: 'product', previousView: 'gallery', productId }
+        navigation: { currentView: 'product', previousView: 'gallery', productId: product.slug! }
       }));
     }
     
-    fetchProductData(productId);
+    fetchProductData(product.slug);
   }, [appState.navigation.currentView, fetchProductData]);
 
   const navigateBack = useCallback(() => {
     const previousView = appState.navigation.previousView || 'gallery';
     console.log('🔙 Navigating back to:', previousView);
+    
+    // Update browser URL when going back
+    const backUrl = previousView === 'home' ? '/' : '/gallery';
+    window.history.pushState({}, '', backUrl);
     
     setAppState(prev => ({
       ...prev,
@@ -512,7 +524,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
             sections={appState.homeData.sections}
             loading={appState.homeData.loading}
             error={appState.homeData.error}
-            onProductClick={(product) => navigateToProduct(product.id, 'home')}
+            onProductClick={(product) => navigateToProduct(product, 'home')}
             onNavigateToGallery={navigateToGallery}
           />
         );
@@ -529,7 +541,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
             stopLoading={appState.galleryData.stopLoading}
             currentPage={appState.galleryData.currentPage}
             scrollPosition={appState.galleryData.scrollPosition}
-            onProductClick={(product) => navigateToProduct(product.id, 'gallery')}
+            onProductClick={(product) => navigateToProduct(product, 'gallery')}
             onFiltersChange={handleGalleryFiltersChange}
             onLoadMore={handleGalleryLoadMore}
             onNextPage={handleGalleryNextPage}
@@ -579,7 +591,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
             stopLoading={appState.galleryData.stopLoading}
             currentPage={appState.galleryData.currentPage}
             scrollPosition={appState.galleryData.scrollPosition}
-            onProductClick={(product) => navigateToProduct(product.id, 'gallery')}
+            onProductClick={(product) => navigateToProduct(product, 'gallery')}
             onFiltersChange={handleGalleryFiltersChange}
             onLoadMore={handleGalleryLoadMore}
             onNextPage={handleGalleryNextPage}

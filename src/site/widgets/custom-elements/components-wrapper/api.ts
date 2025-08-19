@@ -53,6 +53,7 @@ export interface ProductFilter {
   returnTotal?: boolean;
   partial?: boolean;
   sort?: 'pricelow' | 'pricehigh' | 'artist' | 'title';
+  slug?: string;
   name?: string;
   artist?: string;
   title?: string;
@@ -176,12 +177,20 @@ export class CatalogAPI {
     }
   }
 
-  static async fetchProductDetails(productId: string): Promise<FullProduct> {
-    const url = new URL(`${BASE_URL}/products`);
-    url.searchParams.set('id', productId);
+
+
+  static async fetchProductDetailsBySlug(slug: string): Promise<FullProduct> {
+    // Create filter object for base64 encoding (same approach as gallery)
+    const filter = {
+      slug: slug,
+      returnTotal: false,
+      partial: false // Not partial for product details
+    };
+
+    const url = this.createFilterUrl(filter);
 
     try {
-      const response = await fetch(url.toString());
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -200,10 +209,10 @@ export class CatalogAPI {
           descnotes: product.metadata?.notes
         };
       } else {
-        throw new Error(`Product with id ${productId} not found`);
+        throw new Error(`Product with slug ${slug} not found`);
       }
     } catch (error) {
-      console.error('Failed to fetch product details:', error);
+      console.error('Failed to fetch product details by slug:', error);
       throw error;
     }
   }

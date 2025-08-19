@@ -151,17 +151,17 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
           </div>
           
           {product.desctracklist && (
-            <p>
+            <div>
               <h3>Track List</h3>
-              <span dangerouslySetInnerHTML={renderDescription(product.desctracklist)} />
-            </p>
+              <div dangerouslySetInnerHTML={renderDescription(product.desctracklist)} />
+            </div>
           )}
           
           {product.descnotes && (
-            <p>
+            <div>
               <h3>Notes</h3>
-              <span dangerouslySetInnerHTML={renderDescription(product.descnotes)} />
-            </p>
+              <div dangerouslySetInnerHTML={renderDescription(product.descnotes)} />
+            </div>
           )}
         </div>
       </div>

@@ -15,6 +15,15 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
   }, [product.image]);
+
+  // Generate URL using slug (same format as ref/product-gallery.js)
+  const productUrl = useMemo(() => {
+    if (!product.slug) {
+      console.warn('⚠️ Product has no slug:', product);
+      return '#';
+    }
+    return `/product-page/${product.slug}`;
+  }, [product.slug]);
   
   const handleImageError = () => {
     setImageError(true);
@@ -26,7 +35,11 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   };
 
   const handleImageClick = () => {
-    console.log('ProductCard image clicked:', product.id);
+    console.log('ProductCard image clicked:', product.slug);
+    if (!product.slug) {
+      console.error('❌ Cannot navigate - product has no slug:', product);
+      return;
+    }
     if (onImageClick) {
       onImageClick(product);
     } else {
@@ -54,12 +67,17 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   
   return (
     <div className={styles.productCard}>
-      <div 
+      <a 
+        href={productUrl}
         className={styles.productImageContainer}
         role="button"
         tabIndex={0}
-        onClick={handleImageClick}
+        onClick={(e) => {
+          e.preventDefault(); // Prevent actual navigation to avoid Wix re-render
+          handleImageClick(); // Use internal SPA navigation instead
+        }}
         onKeyUp={(e) => handleKeyUp(e, 'image')}
+        title={`${product.artist} - ${product.title}`}
       >
         {!imageLoaded && !imageError && (
           <div className={styles.imageSkeleton}></div>
@@ -82,7 +100,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
             <p>{product.ribbon}</p>
           </div>
         )}
-      </div>
+      </a>
       <div className={styles.productInfo}>
         <div className={styles.namePanel}>
           <a>{`${product.artist} - ${product.title}`}</a>
