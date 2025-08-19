@@ -317,7 +317,24 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         ...prev,
         galleryData: {
           ...prev.galleryData,
-          products: isInitial ? response.products : [...prev.galleryData.products, ...response.products],
+          products: isInitial ? response.products : (() => {
+            // Check for duplicates and warn about server-side issue
+            const existingIds = new Set(prev.galleryData.products.map(p => p.id));
+            const duplicates = response.products.filter(p => existingIds.has(p.id));
+            
+            if (duplicates.length > 0) {
+              console.warn('🚨 SERVER ISSUE: Received duplicate products from API:', {
+                duplicateCount: duplicates.length,
+                duplicateIds: duplicates.map(p => p.id),
+                existingProductsCount: prev.galleryData.products.length,
+                newProductsCount: response.products.length,
+                currentPage: prev.galleryData.currentPage,
+                duplicateProducts: duplicates
+              });
+            }
+            
+            return [...prev.galleryData.products, ...response.products];
+          })(),
           total: response.total !== undefined ? response.total : prev.galleryData.total,
           loading: false,
           stopLoading: response.products.length === 0,

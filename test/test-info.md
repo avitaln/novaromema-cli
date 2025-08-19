@@ -9,10 +9,14 @@ The API calls now work properly through Vite's proxy configuration.
 1. **Vite Proxy Configuration**:
    ```typescript
    proxy: {
-     '/api/catalog': {
-       target: 'https://novaromemasync.fly.dev',
+     '/api': {
+       target: API_TARGET,
        changeOrigin: true,
        rewrite: (path) => path.replace(/^\/api/, ''),
+     },
+     '/products': {
+       target: API_TARGET,
+       changeOrigin: true,
      }
    }
    ```
@@ -30,7 +34,16 @@ The API calls now work properly through Vite's proxy configuration.
 ### 🚀 Testing URLs:
 
 - **Main Test Page**: http://localhost:3001
-- **API Test**: http://localhost:3001/api/catalog?limit=2&offset=0&returnTotal=true&partial=true
+- **API Test**: Use POST request to http://localhost:3001/products with JSON body:
+  ```json
+  {
+    "limit": 2,
+    "offset": 0,
+    "returnTotal": true,
+    "partial": true,
+    "filter": {}
+  }
+  ```
 
 ### 📊 Performance Testing:
 

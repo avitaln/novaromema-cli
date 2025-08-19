@@ -94,10 +94,21 @@ export class CatalogAPI {
     'Digital': 1 // Assuming digital maps to CD for now
   } as const;
 
-  // Helper function to create base64 encoded filter URL
-  static createFilterUrl(filterObject: ProductFilter): string {
-    const encodedFilter = btoa(JSON.stringify(filterObject));
-    return `${BASE_URL}/products?filter=${encodedFilter}`;
+  // Helper function to make POST requests to products endpoint
+  static async queryProducts(queryObject: any): Promise<CatalogResponse<PartialProduct | FullProduct>> {
+    const response = await fetch(`${BASE_URL}/products`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(queryObject)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    return await response.json();
   }
 
   static async fetchProducts(
@@ -106,27 +117,25 @@ export class CatalogAPI {
     returnTotal: boolean = false,
     formats?: string
   ): Promise<CatalogResponse<PartialProduct>> {
-    // Convert old format parameter to new filter format
-    const filter: ProductFilter = {
-      limit,
-      offset,
-      returnTotal,
-      partial: true
-    };
+    // Build filter object for the new POST structure
+    const filter: any = {};
 
     if (formats) {
       // Convert comma-separated format string to array of numbers
       filter.formats = formats.split(',').map(f => parseInt(f.trim())).filter(f => !isNaN(f));
     }
 
-    const url = this.createFilterUrl(filter);
+    // Build query object with query-level parameters and filter
+    const query = {
+      limit,
+      offset,
+      returnTotal,
+      partial: true,
+      filter
+    };
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      return await this.queryProducts(query) as CatalogResponse<PartialProduct>;
     } catch (error) {
       console.error('Failed to fetch products:', error);
       throw error;
@@ -135,14 +144,44 @@ export class CatalogAPI {
 
   // New method for advanced filtering with all options
   static async fetchProductsWithFilter(filter: ProductFilter): Promise<CatalogResponse<PartialProduct>> {
-    const url = this.createFilterUrl(filter);
+    // Separate query-level parameters from filter-level parameters
+    const queryLevelParams = {
+      limit: filter.limit,
+      offset: filter.offset,
+      returnTotal: filter.returnTotal,
+      partial: filter.partial,
+      sort: filter.sort
+    };
+
+    // Filter-level parameters (everything else)
+    const filterParams: any = {};
+    
+    // Add all filter-specific parameters
+    if (filter.slug) filterParams.slug = filter.slug;
+    if (filter.name) filterParams.name = filter.name;
+    if (filter.artist) filterParams.artist = filter.artist;
+    if (filter.title) filterParams.title = filter.title;
+    if (filter.minPrice !== undefined) filterParams.minPrice = filter.minPrice;
+    if (filter.maxPrice !== undefined) filterParams.maxPrice = filter.maxPrice;
+    if (filter.formats) filterParams.formats = filter.formats;
+    if (filter.specials) filterParams.specials = filter.specials;
+    if (filter.genres) filterParams.genres = filter.genres;
+    if (filter.isNew !== undefined) filterParams.isNew = filter.isNew;
+    if (filter.country) filterParams.country = filter.country;
+
+    // Build the query object, removing undefined values
+    const query: any = {};
+    
+    if (queryLevelParams.limit !== undefined) query.limit = queryLevelParams.limit;
+    if (queryLevelParams.offset !== undefined) query.offset = queryLevelParams.offset;
+    if (queryLevelParams.returnTotal !== undefined) query.returnTotal = queryLevelParams.returnTotal;
+    if (queryLevelParams.partial !== undefined) query.partial = queryLevelParams.partial;
+    if (queryLevelParams.sort !== undefined) query.sort = queryLevelParams.sort;
+    
+    query.filter = filterParams;
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
+      return await this.queryProducts(query) as CatalogResponse<PartialProduct>;
     } catch (error) {
       console.error('Failed to fetch products with filter:', error);
       throw error;
@@ -180,21 +219,17 @@ export class CatalogAPI {
 
 
   static async fetchProductDetailsBySlug(slug: string): Promise<FullProduct> {
-    // Create filter object for base64 encoding (same approach as gallery)
-    const filter = {
-      slug: slug,
+    // Build query object for the new POST structure
+    const query = {
       returnTotal: false,
-      partial: false // Not partial for product details
+      partial: false, // Not partial for product details
+      filter: {
+        slug: slug
+      }
     };
 
-    const url = this.createFilterUrl(filter);
-
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await this.queryProducts(query) as CatalogResponse<FullProduct>;
       
       // API returns { products: [...], total: number }
       // We need the first product from the array
