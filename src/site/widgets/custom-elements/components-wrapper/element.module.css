@@ -275,12 +275,12 @@
 }
 
 .productGridWithFilter {
-  padding-top: 80px;
+  padding-top: 140px; /* Account for fixed menu (60px) + filter bar (80px) */
 }
 
 @media (max-width: 800px) {
   .productGridWithFilter {
-    padding-top: 140px;
+    padding-top: 200px; /* Account for fixed menu (60px) + mobile filter bar (140px) */
   }
 }
 

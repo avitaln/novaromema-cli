@@ -1,6 +1,7 @@
 .filterBarContainer {
   direction: rtl;
   position: fixed;
+  top: 49px;
   z-index: 1;
   display: flex;
   width: 100%;
