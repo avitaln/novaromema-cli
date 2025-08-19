@@ -1,21 +1,22 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { PartialProduct } from './api';
 import { ProductCard } from './ProductCard';
+import { FilterBar } from './FilterBar';
 import styles from './element.module.css';
 
 interface FilterOptions {
-  search: string;
-  genres: string[];
-  labels: string[];
-  formats: string[];
-  years: string[];
-  priceRange: string;
+  genre: string;
+  special: string;
+  condition: string;
+  format: string;
   sort: string;
+  search: string;
 }
 
 interface ProductGalleryProps {
   products: PartialProduct[];
   filters: FilterOptions;
+  mode: 'all' | 'cd' | 'vinyl';
   loading: boolean;
   error: string | null;
   total: number | null;
@@ -33,6 +34,7 @@ interface ProductGalleryProps {
 export function ProductGallery({
   products,
   filters,
+  mode,
   loading,
   error,
   total,
@@ -56,233 +58,6 @@ export function ProductGallery({
 
   // Get current path for route-based logic
   const currentPath = window.location.pathname;
-
-  // Filter Header Component
-  const FilterHeader = () => {
-    // Genre options in correct order with English labels
-    const genres = [
-      'Israeli',
-      'Rock/Pop', 
-      'Alternative Rock',
-      'New Wave/Post Punk/Gothic',
-      'Jazz/Blues',
-      'Soul/Funk',
-      'Electronic',
-      'Trance',
-      'Experimental/Industrial/Noise',
-      'Hip Hop',
-      'Reggae/Dub',
-      'Hardcore/Punk',
-      'Metal',
-      'Doom/Sludge/Stoner',
-      'Prog/Psychedelic',
-      'Folk/Country',
-      'World',
-      'Classical',
-      'Soundtracks'
-    ];
-    const labels = ['אד נוחים', 'EMI', 'Sony', 'Warner', 'Universal', 'Indie'];
-    const formatOptions = ['LP', 'CD', 'Cassette', 'Digital'];
-    const years = ['2024', '2023', '2022', '2021', '2020', '2019', '2018'];
-    const priceRanges = ['עד 50 ש"ח', '50-100 ש"ח', '100-150 ש"ח', '150+ ש"ח'];
-    const sortOptions = ['הכי חדש', 'מחיר נמוך לגבוה', 'מחיר גבוה לנמוך', 'לפי אמן', 'לפי כותרת'];
-
-    const handleFiltersChange = (updatedFilters: Partial<FilterOptions>) => {
-      onFiltersChange({ ...filters, ...updatedFilters });
-    };
-
-    return (
-      <div className={styles.filterHeader}>
-        <div className={styles.filterContainer}>
-          {/* Search */}
-          <div className={styles.filterItem}>
-            <input
-              type="text"
-              placeholder="חיפוש במוצרים..."
-              value={filters.search}
-              onChange={(e) => handleFiltersChange({ search: e.target.value })}
-              className={styles.searchInput}
-            />
-          </div>
-
-          {/* Genres Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value && !filters.genres.includes(value)) {
-                  handleFiltersChange({ genres: [...filters.genres, value] });
-                }
-              }}
-            >
-              <option value="">Genres</option>
-              {genres.map(genre => (
-                <option key={genre} value={genre}>{genre}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Labels Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value && !filters.labels.includes(value)) {
-                  handleFiltersChange({ labels: [...filters.labels, value] });
-                }
-              }}
-            >
-              <option value="">חברות הקלטות</option>
-              {labels.map(label => (
-                <option key={label} value={label}>{label}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Formats Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value && !filters.formats.includes(value)) {
-                  handleFiltersChange({ formats: [...filters.formats, value] });
-                }
-              }}
-            >
-              <option value="">סוג</option>
-              {formatOptions.map(format => (
-                <option key={format} value={format}>{format}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Years Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value && !filters.years.includes(value)) {
-                  handleFiltersChange({ years: [...filters.years, value] });
-                }
-              }}
-            >
-              <option value="">שנים</option>
-              {years.map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Price Range Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              value={filters.priceRange}
-              onChange={(e) => handleFiltersChange({ priceRange: e.target.value })}
-            >
-              <option value="">טווח מחירים</option>
-              {priceRanges.map(range => (
-                <option key={range} value={range}>{range}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className={styles.filterItem}>
-            <select 
-              className={styles.filterSelect}
-              value={filters.sort}
-              onChange={(e) => handleFiltersChange({ sort: e.target.value })}
-            >
-              <option value="">מיון</option>
-              {sortOptions.map(sort => (
-                <option key={sort} value={sort}>{sort}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Results Count */}
-          <div className={styles.resultsCount}>
-            מציג {total} {currentPath === '/vinyl' ? 'תקליטים' : currentPath === '/cd' ? 'דיסקים' : 'תקליטים ודיסקים'}
-          </div>
-        </div>
-        
-        {/* Active Filters */}
-        <div className={styles.activeFilters}>
-          {filters.genres.map(genre => (
-            <span key={genre} className={styles.filterTag}>
-              {genre}
-              <button 
-                onClick={() => handleFiltersChange({ genres: filters.genres.filter(g => g !== genre) })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {filters.labels.map(label => (
-            <span key={label} className={styles.filterTag}>
-              {label}
-              <button 
-                onClick={() => handleFiltersChange({ labels: filters.labels.filter(l => l !== label) })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {filters.formats.map(format => (
-            <span key={format} className={styles.filterTag}>
-              {format}
-              <button 
-                onClick={() => handleFiltersChange({ formats: filters.formats.filter(f => f !== format) })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {filters.years.map(year => (
-            <span key={year} className={styles.filterTag}>
-              {year}
-              <button 
-                onClick={() => handleFiltersChange({ years: filters.years.filter(y => y !== year) })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          ))}
-          {filters.priceRange && (
-            <span className={styles.filterTag}>
-              {filters.priceRange}
-              <button 
-                onClick={() => handleFiltersChange({ priceRange: '' })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          )}
-          {filters.sort && (
-            <span className={styles.filterTag}>
-              מיון: {filters.sort}
-              <button 
-                onClick={() => handleFiltersChange({ sort: '' })}
-                className={styles.removeFilter}
-              >
-                ×
-              </button>
-            </span>
-          )}
-        </div>
-      </div>
-    );
-  };
 
   const handleImageClick = (product: PartialProduct) => {
     console.log('Product clicked:', product.id);
@@ -417,9 +192,14 @@ export function ProductGallery({
 
   return (
     <div ref={galleryRef} className={styles.productGallery}>
-      <FilterHeader />
+      <FilterBar 
+        mode={mode}
+        total={total}
+        initialFilters={filters}
+        onFilterChange={onFiltersChange}
+      />
       
-      <div className={styles.productGrid}>
+      <div className={`${styles.productGrid} ${styles.productGridWithFilter}`}>
         {products.map((product) => (
           <ProductCard 
             key={product.id} 

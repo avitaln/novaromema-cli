@@ -20,13 +20,12 @@ interface Props {
 }
 
 interface FilterOptions {
-  search: string;
-  genres: string[];
-  labels: string[];
-  formats: string[];
-  years: string[];
-  priceRange: string;
+  genre: string;
+  special: string;
+  condition: string;
+  format: string;
   sort: string;
+  search: string;
 }
 
 interface HomeSection {
@@ -73,38 +72,77 @@ interface SharedAppState {
   };
 }
 
-// English genre labels mapped to API IDs (from ProductGallery.tsx)
+// Genre mappings from reference constants.js
 const GENRE_MAPPINGS: Record<string, number> = {
-  'Israeli': 1,
-  'Rock/Pop': 2,
-  'Alternative Rock': 3,
-  'New Wave/Post Punk/Gothic': 4,
-  'Jazz/Blues': 5,
-  'Soul/Funk': 6,
-  'Electronic': 7,
-  'Trance': 8,
-  'Experimental/Industrial/Noise': 9,
-  'Hip Hop': 10,
-  'Reggae/Dub': 11,
-  'Hardcore/Punk': 12,
-  'Metal': 13,
-  'Doom/Sludge/Stoner': 14,
-  'Prog/Psychedelic': 15,
-  'Folk/Country': 16,
-  'World': 17,
-  'Classical': 18,
-  'Soundtracks': 19
+  'all': 0,
+  'israeli': 1,
+  'rock-pop': 2,
+  'alternative-rock': 3,
+  'newwave-postpunk-gothic': 4,
+  'jazz-blues': 5,
+  'soul-funk': 6,
+  'electronic': 7,
+  'trance': 8,
+  'experimental-industrial-noise': 9,
+  'hip-hop': 10,
+  'reggae-dub': 11,
+  'hardcore-punk': 12,
+  'metal': 13,
+  'doom-sludge-stoner': 14,
+  'prog-psychedelic': 15,
+  'folk-country': 16,
+  'world': 17,
+  'classical': 18,
+  'soundtracks': 19
 };
 
-const SORT_MAPPINGS: Record<string, string> = {
-  'מחיר נמוך לגבוה': 'pricelow',
-  'מחיר גבוה לנמוך': 'pricehigh',
-  'לפי אמן': 'artist',
-  'לפי כותרת': 'title',
-  'הכי חדש': ''
+// Format mappings from reference constants.js  
+const FORMAT_MAPPINGS: Record<string, number> = {
+  'all': 0,
+  'cd': 1,
+  'lp': 2,
+  '12': 3,
+  '10': 4,
+  '7': 5,
+  'cassette': 6
 };
+
+// Condition mappings
+const CONDITION_MAPPINGS: Record<string, string> = {
+  'all': '',
+  'new': 'new',
+  'used': 'used'
+};
+
+// Special category mappings  
+const SPECIAL_MAPPINGS: Record<string, string> = {
+  'all': '',
+  'newinsite': 'newinsite',
+  'preorder': 'preorder', 
+  'recommended': 'recommended',
+  'classics': 'classics',
+  'cheap': 'cheap',
+  'rare': 'rare'
+};
+
+
+// Constants
+const PRODUCTS_PER_PAGE = 25;
 
 function CustomElement({ displayName, height, responsive, fillScreen, component = 'gallery', productId, productData }: Props) {
+  // Initialize filters from URL parameters
+  const initializeFiltersFromUrl = (): FilterOptions => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+      genre: urlParams.get('genre') || 'all',
+      special: urlParams.get('special') || 'all',
+      condition: urlParams.get('condition') || 'all',
+      format: urlParams.get('format') || 'all',
+      sort: urlParams.get('sort') || 'new',
+      search: urlParams.get('search') || ''
+    };
+  };
+
   // Initialize shared app state
   const [appState, setAppState] = useState<SharedAppState>({
     homeData: { 
@@ -115,15 +153,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     },
     galleryData: { 
       products: [], 
-      filters: {
-        search: '',
-        genres: [],
-        labels: [],
-        formats: [],
-        years: [],
-        priceRange: '',
-        sort: ''
-      },
+      filters: initializeFiltersFromUrl(),
       currentPage: 0, 
       total: null, 
       loading: false, 
@@ -218,67 +248,11 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     }
   }, []);
 
-  const buildApiFilter = useCallback((isInitial: boolean = false, pageOverride?: number): ProductFilter => {
+  // buildApiFilter function removed - logic inlined in fetchGalleryData to avoid circular dependency
+
+  const fetchGalleryData = useCallback(async (isInitial: boolean = false, pageOverride?: number, currentFilters?: FilterOptions) => {
     const { galleryData } = appState;
-    const currentPathNow = window.location.pathname; // Read current path when filter is built
-    
-    let offset;
-    if (isInitial) {
-      const page = pageOverride ?? galleryData.currentPage;
-      offset = page * PRODUCTS_PER_PAGE;
-      console.log(`📊 Initial load - page: ${page} (override: ${pageOverride}, current: ${galleryData.currentPage}) → offset: ${offset}`);
-    } else {
-      offset = (galleryData.currentPage * PRODUCTS_PER_PAGE) + galleryData.products.length;
-      console.log(`📊 Infinite scroll - page: ${galleryData.currentPage}, products: ${galleryData.products.length} → offset: ${offset}`);
-    }
-    
-    const filter: ProductFilter = {
-      limit: 25,
-      offset,
-      returnTotal: isInitial,
-      partial: true
-    };
-
-    // Route-based format filtering
-    if (currentPathNow === '/cd') {
-      filter.formats = [1]; // CD only
-    } else if (currentPathNow === '/vinyl') {
-      filter.formats = [2, 3, 4, 5, 6]; // All vinyl formats
-    }
-
-    // Apply UI filters
-    if (galleryData.filters.search) {
-      filter.name = galleryData.filters.search; // Searches both artist and title
-    }
-
-    // Map genres from Hebrew to API IDs
-    if (galleryData.filters.genres.length > 0) {
-      filter.genres = galleryData.filters.genres.map(genre => GENRE_MAPPINGS[genre]).filter(id => id !== undefined);
-    }
-
-    // Map formats from UI to API IDs (only if not on specific route)
-    if (galleryData.filters.formats.length > 0 && currentPathNow !== '/cd' && currentPathNow !== '/vinyl') {
-      filter.formats = galleryData.filters.formats.map(format => CatalogAPI.HEBREW_FORMAT_MAPPINGS[format as keyof typeof CatalogAPI.HEBREW_FORMAT_MAPPINGS]).filter(id => id !== undefined);
-    }
-
-    // Parse price range
-    const priceFilter = parsePriceRange(galleryData.filters.priceRange);
-    if (priceFilter.minPrice) filter.minPrice = priceFilter.minPrice;
-    if (priceFilter.maxPrice) filter.maxPrice = priceFilter.maxPrice;
-
-    // Apply sorting
-    if (galleryData.filters.sort && SORT_MAPPINGS[galleryData.filters.sort]) {
-      const sortValue = SORT_MAPPINGS[galleryData.filters.sort];
-      if (sortValue) {
-        filter.sort = sortValue as any;
-      }
-    }
-
-    return filter;
-  }, [appState.galleryData, parsePriceRange]);
-
-  const fetchGalleryData = useCallback(async (isInitial: boolean = false, pageOverride?: number) => {
-    const { galleryData } = appState;
+    const filtersToUse = currentFilters || galleryData.filters;
     
     if (galleryData.loading || (galleryData.stopLoading && !isInitial)) {
       console.log('🚫 Skipping fetch - loading:', galleryData.loading, 'stopLoading:', galleryData.stopLoading, 'isInitial:', isInitial);
@@ -299,8 +273,93 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     }));
 
     try {
-      const filter = buildApiFilter(isInitial, pageOverride);
-      console.log('🔍 API Filter with offset:', filter.offset, 'limit:', filter.limit, 'full filter:', filter);
+      // Build API filter inline to avoid circular dependency
+      const currentPathNow = window.location.pathname;
+      
+      let offset;
+      if (isInitial) {
+        const page = pageOverride ?? galleryData.currentPage;
+        offset = page * PRODUCTS_PER_PAGE;
+        console.log(`📊 Initial load - page: ${page} (override: ${pageOverride}, current: ${galleryData.currentPage}) → offset: ${offset}`);
+      } else {
+        offset = (galleryData.currentPage * PRODUCTS_PER_PAGE) + galleryData.products.length;
+        console.log(`📊 Infinite scroll - page: ${galleryData.currentPage}, products: ${galleryData.products.length} → offset: ${offset}`);
+      }
+      
+      const filter: ProductFilter = {
+        limit: 25,
+        offset,
+        returnTotal: isInitial,
+        partial: true
+      };
+
+      // Route-based format filtering
+      if (currentPathNow === '/cd') {
+        filter.formats = [1]; // CD only
+      } else if (currentPathNow === '/vinyl') {
+        filter.formats = [2, 3, 4, 5, 6]; // All vinyl formats
+      }
+
+      // Apply UI filters
+      if (filtersToUse.search) {
+        filter.name = filtersToUse.search;
+      }
+
+      // Apply genre filter  
+      if (filtersToUse.genre && filtersToUse.genre !== 'all') {
+        const genreId = GENRE_MAPPINGS[filtersToUse.genre];
+        if (genreId !== undefined && genreId !== 0) {
+          filter.genres = [genreId];
+        }
+      }
+
+      // Apply format filter (only if not on specific route)
+      if (filtersToUse.format && filtersToUse.format !== 'all' && currentPathNow !== '/cd' && currentPathNow !== '/vinyl') {
+        const formatId = FORMAT_MAPPINGS[filtersToUse.format];
+        if (formatId && formatId !== 0) {
+          filter.formats = [formatId];
+        }
+      }
+
+      // Apply condition filter
+      if (filtersToUse.condition && filtersToUse.condition !== 'all') {
+        if (filtersToUse.condition === 'new') {
+          filter.isNew = true;
+        } else if (filtersToUse.condition === 'used') {
+          filter.isNew = false;
+        }
+      }
+
+      // Apply special category filter
+      if (filtersToUse.special && filtersToUse.special !== 'all') {
+        const specialMappings: Record<string, number> = {
+          'newinsite': 1,
+          'preorder': 2, 
+          'recommended': 3,
+          'classics': 4,
+          'cheap': 5,
+          'rare': 6
+        };
+        const specialId = specialMappings[filtersToUse.special];
+        if (specialId) {
+          filter.specials = [specialId];
+        }
+      }
+
+      // Apply sorting (skip "new" since it's the default)
+      if (filtersToUse.sort && filtersToUse.sort !== 'new') {
+        const sortValue = filtersToUse.sort;
+        if (sortValue) {
+          filter.sort = sortValue as any;
+        }
+      }
+      
+      console.log('🔍 API Filter:', { 
+        offset: filter.offset, 
+        limit: filter.limit, 
+        genreInFilter: filtersToUse.genre, 
+        genresArray: filter.genres
+      });
       
       const response = await CatalogAPI.fetchProductsWithFilter(filter);
       const finalProductsCount = isInitial ? response.products.length : galleryData.products.length + response.products.length;
@@ -353,7 +412,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         }
       }));
     }
-  }, [buildApiFilter]);
+  }, []); // Remove buildApiFilter dependency to avoid circular dependency
 
   const fetchProductData = useCallback(async (slug: string) => {
     console.log('📄 Fetching product data for slug:', slug);
@@ -470,6 +529,26 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
 
   const handleGalleryFiltersChange = useCallback((newFilters: FilterOptions) => {
     console.log('🔍 Gallery filters changed:', newFilters);
+    
+    // Update URL parameters
+    const currentUrl = new URL(window.location.href);
+    const params = currentUrl.searchParams;
+    
+    // Clear existing filter params and add new ones
+    ['genre', 'special', 'condition', 'format', 'sort', 'search'].forEach(key => {
+      params.delete(key);
+    });
+    
+    // Add non-default filter values to URL
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value && value !== 'all' && value !== '' && !(key === 'sort' && value === 'new')) {
+        params.set(key, value);
+      }
+    });
+    
+    // Update browser URL without triggering navigation
+    window.history.replaceState(null, '', currentUrl.toString());
+    
     setAppState(prev => ({
       ...prev,
       galleryData: {
@@ -482,7 +561,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       }
     }));
     // Fetch with new filters
-    setTimeout(() => fetchGalleryData(true), 0);
+    setTimeout(() => fetchGalleryData(true, undefined, newFilters), 0);
   }, [fetchGalleryData]);
 
   const handleGalleryNextPage = useCallback(() => {
@@ -520,8 +599,9 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     // Initialize data based on current view
     if (currentView === 'home' && appState.homeData.sections.length === 0 && !appState.homeData.loading) {
       fetchHomeData();
-    } else if (currentView === 'gallery' && appState.galleryData.products.length === 0 && !appState.galleryData.loading && appState.galleryData.hasMore) {
-      // Only initialize if hasMore is true (prevents conflicts with pagination which sets hasMore: false)
+    } else if (currentView === 'gallery' && appState.galleryData.products.length === 0 && !appState.galleryData.loading && appState.galleryData.hasMore && appState.galleryData.total === null) {
+      // Only initialize if hasMore is true AND we haven't fetched before (total === null) 
+      // This prevents conflicts with filter changes which also reset products to []
       console.log('🎯 Initializing gallery data...');
       fetchGalleryData(true);
     } else if (currentView === 'product' && appState.navigation.productId && !appState.productData.currentProduct && !appState.productData.loading) {
@@ -547,10 +627,12 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         );
         
       case 'gallery':
+        const currentPath = window.location.pathname;
         return (
           <ProductGallery 
             products={appState.galleryData.products}
             filters={appState.galleryData.filters}
+            mode={currentPath === '/cd' ? 'cd' : currentPath === '/vinyl' ? 'vinyl' : 'all'}
             loading={appState.galleryData.loading}
             error={appState.galleryData.error}
             total={appState.galleryData.total}
@@ -597,10 +679,12 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         return <div>No product data provided for ProductCard</div>;
         
       default:
+        const defaultPath = window.location.pathname;
         return (
           <ProductGallery 
             products={appState.galleryData.products}
             filters={appState.galleryData.filters}
+            mode={defaultPath === '/cd' ? 'cd' : defaultPath === '/vinyl' ? 'vinyl' : 'all'}
             loading={appState.galleryData.loading}
             error={appState.galleryData.error}
             total={appState.galleryData.total}

@@ -274,6 +274,16 @@
   contain: layout style paint;
 }
 
+.productGridWithFilter {
+  padding-top: 80px; /* Space for fixed filter bar */
+}
+
+@media (max-width: 800px) {
+  .productGridWithFilter {
+    padding-top: 120px; /* More space for mobile 3-line layout */
+  }
+}
+
 /* Responsive breakpoints */
 @media (max-width: 1200px) {
   .productGrid {
