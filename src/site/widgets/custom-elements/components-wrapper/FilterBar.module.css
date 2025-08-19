@@ -2,23 +2,18 @@
   direction: rtl;
   position: fixed;
   z-index: 1;
-  top: 0;
-  left: 0;
-  right: 0;
+  display: flex;
+  width: 100%;
+  justify-content: center;
   background-color: rgb(190, 190, 190);
-  padding: 10px 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .filterBar {
-  max-width: 1600px;
-  margin: 0 auto;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 0 20px;
+  height: auto;
 }
 
 /* Results count */
@@ -120,109 +115,8 @@
   text-align: right;
 }
 
-/* Mobile responsive - 3 lines layout */
 @media (max-width: 800px) {
   .filterBar {
     flex-wrap: wrap;
-    justify-content: flex-start;
-    gap: 8px;
-    padding: 0 10px;
-  }
-  
-  /* First line: Results count + formats */
-  .resultsCount {
-    order: 1;
-    font-size: 16px;
-    padding: 6px 8px;
-    flex: 1;
-    text-align: right;
-  }
-  
-  .filterDropdown:nth-of-type(1) { /* Format dropdown when visible */
-    order: 2;
-  }
-  
-  /* Force break after first line */
-  .filterDropdown:nth-of-type(1)::after {
-    content: "";
-    flex-basis: 100%;
-    height: 0;
-  }
-  
-  /* Second line: Genre, Condition, Special */
-  .filterDropdown:nth-of-type(2) { /* Genre */
-    order: 3;
-  }
-  
-  .filterDropdown:nth-of-type(3) { /* Condition */
-    order: 4;
-  }
-  
-  .filterDropdown:nth-of-type(4) { /* Special */
-    order: 5;
-  }
-  
-  /* Force break after second line */
-  .filterDropdown:nth-of-type(4)::after {
-    content: "";
-    flex-basis: 100%;
-    height: 0;
-  }
-  
-  /* Third line: Sort + Search */
-  .filterDropdown:nth-of-type(5) { /* Sort */
-    order: 6;
-  }
-  
-  .searchContainer {
-    order: 7;
-    flex: 1;
-    padding: 6px 8px;
-  }
-  
-  .searchInput {
-    width: 100%;
-    height: 28px;
-    font-size: 14px;
-  }
-  
-  .dropdownLabel {
-    font-size: 12px;
-    padding: 1px 6px;
-  }
-  
-  .dropdownButton {
-    padding: 4px 8px;
-    font-size: 13px;
-    min-width: 60px;
-  }
-}
-
-/* Very small mobile adjustments */
-@media (max-width: 480px) {
-  .filterBar {
-    gap: 5px;
-    padding: 0 5px;
-  }
-  
-  .resultsCount {
-    font-size: 14px;
-  }
-  
-  .dropdownLabel {
-    font-size: 11px;
-    padding: 1px 4px;
-  }
-  
-  .dropdownButton {
-    padding: 3px 6px;
-    font-size: 12px;
-    min-width: 50px;
-  }
-  
-  .searchInput {
-    height: 26px;
-    font-size: 13px;
-    padding: 0 8px;
   }
 }

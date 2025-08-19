@@ -575,6 +575,9 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     // Update browser URL without triggering navigation
     window.history.replaceState(null, '', currentUrl.toString());
     
+    // Scroll to top immediately (like next page behavior)
+    window.scrollTo(0, 0);
+    
     setAppState(prev => ({
       ...prev,
       galleryData: {
@@ -583,7 +586,8 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         products: [], // Reset products for new filters
         currentPage: 0,
         stopLoading: false,
-        hasMore: true
+        hasMore: true,
+        scrollPosition: 0
       }
     }));
     // Fetch with new filters
