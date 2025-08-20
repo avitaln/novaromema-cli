@@ -72,6 +72,12 @@ const sortTags = [
   { "value": "artist",     "label": "שם האמן" }
 ];
 
+const searchTypeTags = [
+  { "value": "name", "label": "כותרת ואמן" },
+  { "value": "title", "label": "רק כותרת" },
+  { "value": "artist", "label": "רק אמן" }
+];
+
 interface FilterState {
   genre: string;
   special: string;
@@ -79,6 +85,7 @@ interface FilterState {
   format: string;
   sort: string;
   search: string;
+  searchType: string;
 }
 
 interface FilterBarProps {
@@ -97,6 +104,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
     format: "all",
     sort: "new",
     search: "",
+    searchType: "name",
     ...initialFilters
   });
 
@@ -115,6 +123,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
   }, [initialFilters]);
 
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastQueryBodyRef = useRef<string>('');
 
   // Get format options based on mode
   const getFormatTags = () => {
@@ -140,14 +149,52 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
     }
   };
 
-  // Handle filter changes
+  // Get selected label for dropdown
+  const getSelectedLabel = (tagKey: keyof FilterState, tags: Array<{value: string, label: string}>) => {
+    const selectedTag = tags.find(tag => tag.value === filters[tagKey]);
+    return selectedTag ? selectedTag.label : tags[0].label;
+  };
+
+  // Check if filter is in default state
+  const isDefault = (tagKey: keyof FilterState) => {
+    return filters[tagKey] === 'all' || (filters[tagKey] === 'new' && tagKey === 'sort') || (filters[tagKey] === 'name' && tagKey === 'searchType');
+  };
+
+  // Build query body from filters for comparison
+  const buildQueryBody = useCallback((filters: FilterState) => {
+    // Create a normalized query object that represents the actual API call
+    const queryBody = {
+      genre: filters.genre,
+      special: filters.special,
+      condition: filters.condition,
+      format: filters.format,
+      sort: filters.sort,
+      // Only include search fields if there's actual search text
+      ...(filters.search.trim() !== '' && {
+        search: filters.search.trim(),
+        searchType: filters.searchType
+      })
+    };
+    return JSON.stringify(queryBody);
+  }, []);
+
+  // Handle filter changes with query body comparison
   const handleFilterChange = useCallback((key: keyof FilterState, value: string) => {
     setFilters(prev => {
       const newFilters = { ...prev, [key]: value };
-      onFilterChange(newFilters);
+      
+      // Build query body from new filters
+      const newQueryBody = buildQueryBody(newFilters);
+      
+      // Only trigger API call if query body actually changed
+      if (newQueryBody !== lastQueryBodyRef.current) {
+        lastQueryBodyRef.current = newQueryBody;
+        onFilterChange(newFilters);
+      }
+      
       return newFilters;
     });
-  }, [onFilterChange]);
+  }, [onFilterChange, buildQueryBody]);
 
   // Handle search with debounce
   const handleSearchChange = useCallback((value: string) => {
@@ -163,11 +210,24 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
     searchTimeoutRef.current = setTimeout(() => {
       setFilters(currentFilters => {
         const newFilters = { ...currentFilters, search: value };
+        
+        // Build query body from new filters
+        const newQueryBody = buildQueryBody(newFilters);
+        
+        // Always trigger API call for search changes (search is user-driven)
+        lastQueryBodyRef.current = newQueryBody;
         onFilterChange(newFilters);
+        
         return currentFilters; // Don't change state, just trigger callback
       });
     }, 1000); // 1 second debounce like in reference
-  }, [onFilterChange]);
+  }, [onFilterChange, buildQueryBody]);
+
+  // Initialize lastQueryBodyRef with current filters (after buildQueryBody is defined)
+  useEffect(() => {
+    const initialQueryBody = buildQueryBody(filters);
+    lastQueryBodyRef.current = initialQueryBody;
+  }, []);
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -178,16 +238,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
     };
   }, []);
 
-  // Get selected label for dropdown
-  const getSelectedLabel = (tagKey: keyof FilterState, tags: Array<{value: string, label: string}>) => {
-    const selectedTag = tags.find(tag => tag.value === filters[tagKey]);
-    return selectedTag ? selectedTag.label : tags[0].label;
-  };
 
-  // Check if filter is in default state
-  const isDefault = (tagKey: keyof FilterState) => {
-    return filters[tagKey] === 'all' || (filters[tagKey] === 'new' && tagKey === 'sort');
-  };
 
   return (
     <div className={styles.filterBarContainer}>
@@ -206,11 +257,6 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
             <div className={styles.dropdownContainer}>
               <label className={styles.dropdownLabel}>פורמט</label>
               <div className={styles.dropdownWrapper}>
-                <button 
-                  className={`${styles.dropdownButton} ${!isDefault('format') ? styles.active : ''}`}
-                >
-                  {getSelectedLabel('format', getFormatTags())}
-                </button>
                 <select 
                   className={styles.dropdownSelect}
                   value={filters.format}
@@ -222,6 +268,9 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                     </option>
                   ))}
                 </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('format') ? styles.active : ''}`}>
+                  {getSelectedLabel('format', getFormatTags())}
+                </div>
               </div>
             </div>
           </div>
@@ -232,11 +281,6 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>ז'אנר</label>
             <div className={styles.dropdownWrapper}>
-              <button 
-                className={`${styles.dropdownButton} ${!isDefault('genre') ? styles.active : ''}`}
-              >
-                {getSelectedLabel('genre', genreTags)}
-              </button>
               <select 
                 className={styles.dropdownSelect}
                 value={filters.genre}
@@ -248,6 +292,9 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                   </option>
                 ))}
               </select>
+              <div className={`${styles.dropdownButton} ${!isDefault('genre') ? styles.active : ''}`}>
+                {getSelectedLabel('genre', genreTags)}
+              </div>
             </div>
           </div>
         </div>
@@ -257,11 +304,6 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>מצב</label>
             <div className={styles.dropdownWrapper}>
-              <button 
-                className={`${styles.dropdownButton} ${!isDefault('condition') ? styles.active : ''}`}
-              >
-                {getSelectedLabel('condition', conditionTags)}
-              </button>
               <select 
                 className={styles.dropdownSelect}
                 value={filters.condition}
@@ -273,6 +315,9 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                   </option>
                 ))}
               </select>
+              <div className={`${styles.dropdownButton} ${!isDefault('condition') ? styles.active : ''}`}>
+                {getSelectedLabel('condition', conditionTags)}
+              </div>
             </div>
           </div>
         </div>
@@ -282,11 +327,6 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>קטגוריות מיוחדות</label>
             <div className={styles.dropdownWrapper}>
-              <button 
-                className={`${styles.dropdownButton} ${!isDefault('special') ? styles.active : ''}`}
-              >
-                {getSelectedLabel('special', specialTags)}
-              </button>
               <select 
                 className={styles.dropdownSelect}
                 value={filters.special}
@@ -298,6 +338,9 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                   </option>
                 ))}
               </select>
+              <div className={`${styles.dropdownButton} ${!isDefault('special') ? styles.active : ''}`}>
+                {getSelectedLabel('special', specialTags)}
+              </div>
             </div>
           </div>
         </div>
@@ -307,11 +350,6 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>מיון לפי</label>
             <div className={styles.dropdownWrapper}>
-              <button 
-                className={`${styles.dropdownButton} ${!isDefault('sort') ? styles.active : ''}`}
-              >
-                {getSelectedLabel('sort', sortTags)}
-              </button>
               <select 
                 className={styles.dropdownSelect}
                 value={filters.sort}
@@ -323,6 +361,9 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                   </option>
                 ))}
               </select>
+              <div className={`${styles.dropdownButton} ${!isDefault('sort') ? styles.active : ''}`}>
+                {getSelectedLabel('sort', sortTags)}
+              </div>
             </div>
           </div>
         </div>
@@ -336,6 +377,29 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
             onChange={(e) => handleSearchChange(e.target.value)}
             className={styles.searchInput}
           />
+        </div>
+
+        {/* 8. Search type dropdown */}
+        <div className={styles.filterDropdown}>
+          <div className={styles.dropdownContainer}>
+            <label className={styles.dropdownLabel}>סוג חיפוש</label>
+            <div className={styles.dropdownWrapper}>
+              <select 
+                className={styles.dropdownSelect}
+                value={filters.searchType}
+                onChange={(e) => handleFilterChange('searchType', e.target.value)}
+              >
+                {searchTypeTags.map(tag => (
+                  <option key={tag.value} value={tag.value}>
+                    {tag.label}
+                  </option>
+                ))}
+              </select>
+              <div className={styles.dropdownButton}>
+                {getSelectedLabel('searchType', searchTypeTags)}
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>

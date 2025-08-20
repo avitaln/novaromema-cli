@@ -11,6 +11,7 @@ interface FilterOptions {
   format: string;
   sort: string;
   search: string;
+  searchType: string;
 }
 
 interface ProductGalleryProps {

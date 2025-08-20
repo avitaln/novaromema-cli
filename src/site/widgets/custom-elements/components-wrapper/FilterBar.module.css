@@ -32,24 +32,23 @@
 
 /* Filter dropdowns */
 .filterDropdown {
-  position: relative;
   display: inline-block;
   min-width: fit-content;
+  margin: 0 4px;
 }
 
 .dropdownContainer {
-  background-color: rgb(230, 230, 230);
-  border-radius: 4px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
   font-family: Assistant-SemiBold, Helvetica, sans-serif;
 }
 
 .dropdownLabel {
-  display: block;
   font-size: 14px;
-  padding: 2px 8px;
   color: black;
-  background-color: rgb(230, 230, 230);
+  white-space: nowrap;
 }
 
 .dropdownWrapper {
@@ -58,23 +57,43 @@
 }
 
 .dropdownButton {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   cursor: pointer;
   background-color: black;
   color: white;
-  padding: 6px 12px;
-  border: none;
-  border-radius: 0px 0px 4px 4px;
+  padding: 4px 8px 4px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
   font-size: 16px;
   font-family: Assistant-SemiBold, Helvetica, sans-serif;
-  min-width: 80px;
-  text-align: center;
+  text-align: right;
   white-space: nowrap;
-  pointer-events: none; /* Let select handle clicks */
+  pointer-events: none;
+  position: relative;
 }
 
 .dropdownButton.active {
   background-color: rgb(207, 45, 32);
+  color: white;
+}
+
+.dropdownButton::after {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 4px solid white;
+  pointer-events: none;
+}
+
+.dropdownButton.active::after {
+  border-top: 4px solid white;
 }
 
 .dropdownSelect {
@@ -86,6 +105,12 @@
   opacity: 0;
   cursor: pointer;
   font-size: 16px;
+}
+
+.dropdownSelect:focus + .dropdownButton {
+  outline: none;
+  border-color: rgb(207, 45, 32);
+  box-shadow: 0 0 0 2px rgba(207, 45, 32, 0.2);
 }
 
 /* Search container */
@@ -119,5 +144,23 @@
 @media (max-width: 800px) {
   .filterBar {
     flex-wrap: wrap;
+  }
+  
+  .resultsCount {
+    font-size: 14px;
+  }
+  
+  .dropdownLabel {
+    font-size: 12px;
+  }
+  
+  .dropdownButton {
+    font-size: 14px;
+    padding: 3px 6px 3px 18px;
+  }
+  
+  .searchInput {
+    font-size: 14px;
+    width: 150px;
   }
 }

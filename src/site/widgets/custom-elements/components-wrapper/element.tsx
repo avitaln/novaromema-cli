@@ -26,6 +26,7 @@ interface FilterOptions {
   format: string;
   sort: string;
   search: string;
+  searchType: string;
 }
 
 interface HomeSection {
@@ -139,7 +140,8 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       condition: urlParams.get('condition') || 'all',
       format: urlParams.get('format') || 'all',
       sort: urlParams.get('sort') || 'new',
-      search: urlParams.get('search') || ''
+      search: urlParams.get('search') || '',
+      searchType: urlParams.get('searchType') || 'name'
     };
   };
 
@@ -300,9 +302,21 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         filter.formats = [2, 3, 4, 5, 6]; // All vinyl formats
       }
 
-      // Apply UI filters
+      // Apply UI filters - handle different search types
       if (filtersToUse.search) {
-        filter.name = filtersToUse.search;
+        const searchType = filtersToUse.searchType || 'name';
+        switch (searchType) {
+          case 'title':
+            filter.title = filtersToUse.search;
+            break;
+          case 'artist':
+            filter.artist = filtersToUse.search;
+            break;
+          case 'name':
+          default:
+            filter.name = filtersToUse.search;
+            break;
+        }
       }
 
       // Apply genre filter  
@@ -561,13 +575,13 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     const params = currentUrl.searchParams;
     
     // Clear existing filter params and add new ones
-    ['genre', 'special', 'condition', 'format', 'sort', 'search'].forEach(key => {
+    ['genre', 'special', 'condition', 'format', 'sort', 'search', 'searchType'].forEach(key => {
       params.delete(key);
     });
     
     // Add non-default filter values to URL
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value && value !== 'all' && value !== '' && !(key === 'sort' && value === 'new')) {
+      if (value && value !== 'all' && value !== '' && !(key === 'sort' && value === 'new') && !(key === 'searchType' && value === 'name')) {
         params.set(key, value);
       }
     });
