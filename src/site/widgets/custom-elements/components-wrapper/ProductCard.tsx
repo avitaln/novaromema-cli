@@ -77,7 +77,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
           handleImageClick(); // Use internal SPA navigation instead
         }}
         onKeyUp={(e) => handleKeyUp(e, 'image')}
-        title={`${product.artist} - ${product.title}`}
+        title={`${product.artist} ${product.title}${product.shortFormat ? ` (${product.shortFormat})` : ''}`}
       >
         {!imageLoaded && !imageError && (
           <div className={styles.imageSkeleton}></div>
@@ -85,7 +85,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
         <img 
           className={`${styles.productImage} ${imageLoaded ? styles.imageLoaded : styles.imageLoading} ${imageError ? styles.imageError : ''}`}
           src={imageUrl} 
-          alt={`${product.artist} - ${product.title}`}
+          alt={`${product.artist} ${product.title}${product.shortFormat ? ` (${product.shortFormat})` : ''}`}
           loading="lazy"
           onError={handleImageError}
           onLoad={handleImageLoad}
@@ -103,7 +103,9 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
       </a>
       <div className={styles.productInfo}>
         <div className={styles.namePanel}>
-          <a>{`${product.artist} - ${product.title}`}</a>
+          <a>
+            <span className={styles.artistName}>{product.artist}</span> {product.title}{product.shortFormat ? ` (${product.shortFormat})` : ''}
+          </a>
         </div>
         <div className={styles.pricePanel}>
           <a className={styles.priceText}>₪{product.price?.toFixed(2) ?? '0.00'}</a>
