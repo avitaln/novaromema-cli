@@ -275,12 +275,12 @@
 }
 
 .productGridWithFilter {
-  padding-top: 140px; /* Account for fixed menu (60px) + filter bar (80px) */
+  padding-top: 6rem; /* Account for fixed header (3rem) + filter bar (~3rem) */
 }
 
-@media (max-width: 800px) {
+@media (max-width: 50rem) {
   .productGridWithFilter {
-    padding-top: 200px; /* Account for fixed menu (60px) + mobile filter bar (140px) */
+    padding-top: 7rem; /* Account for fixed header (3rem) + mobile filter bar (~4rem) */
   }
 }
 

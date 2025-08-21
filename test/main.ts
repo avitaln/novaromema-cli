@@ -87,9 +87,7 @@ function initializeReactComponent(app: HTMLElement) {
         <div class="header-title">Nova Roma Gallery</div>
         <div class="version">v26</div>
       </div>
-      <div class="content gallery-page">
-        <div id="react-root" class="gallery-container"></div>
-      </div>
+      <div id="react-root" class="content main-container"></div>
     `;
     
     const rootElement = document.getElementById('react-root');
