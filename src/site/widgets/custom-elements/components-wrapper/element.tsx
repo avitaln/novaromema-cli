@@ -122,8 +122,8 @@ const SPECIAL_MAPPINGS: Record<string, string> = {
   'preorder': 'preorder', 
   'recommended': 'recommended',
   'classics': 'classics',
-  'cheap': 'cheap',
-  'rare': 'rare'
+  'rare': 'rare',
+  'floor': 'floor'
 };
 
 
@@ -359,17 +359,9 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
 
       // Apply special category filter
       if (filtersToUse.special && filtersToUse.special !== 'all') {
-        const specialMappings: Record<string, number> = {
-          'newinsite': 1,
-          'preorder': 2, 
-          'recommended': 3,
-          'classics': 4,
-          'cheap': 5,
-          'rare': 6
-        };
-        const specialId = specialMappings[filtersToUse.special];
-        if (specialId) {
-          filter.specials = [specialId];
+        const specialValue = SPECIAL_MAPPINGS[filtersToUse.special];
+        if (specialValue) {
+          filter.specials = specialValue;
         }
       }
 

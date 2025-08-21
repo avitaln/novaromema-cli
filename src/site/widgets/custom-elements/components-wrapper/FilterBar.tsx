@@ -60,7 +60,7 @@ const specialTags = [
   { "value": "preorder", "label": "הזמנות מוקדמות" },
   { "value": "recommended", "label": "המלצות" },
   { "value": "classics", "label": "קלאסיקות" },
-  { "value": "cheap", "label": "מחירי רצפה" }, 
+  { "value": "floor", "label": "מחירי רצפה" }, 
   { "value": "rare", "label": "נדירים" }
 ];
 

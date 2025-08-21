@@ -60,7 +60,7 @@ export interface ProductFilter {
   minPrice?: number;
   maxPrice?: number;
   formats?: number[];
-  specials?: number[];
+  specials?: string;
   genres?: number[];
   isNew?: boolean;
   country?: string;
@@ -77,14 +77,7 @@ export class CatalogAPI {
     'Cassette': 6
   } as const;
 
-  // Special category mappings based on API guide
-  static readonly SPECIAL_MAPPINGS = {
-    'preorder': 1,
-    'recommended': 2,
-    'classics': 3,
-    'new': 4,
-    'rare': 5
-  } as const;
+  // Special category mappings are now handled as strings
 
   // Hebrew to English format mapping for UI
   static readonly HEBREW_FORMAT_MAPPINGS = {
