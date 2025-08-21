@@ -299,7 +299,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       if (currentPathNow === '/cd') {
         filter.formats = [1]; // CD only
       } else if (currentPathNow === '/vinyl') {
-        filter.formats = [2, 3, 4, 5, 6]; // All vinyl formats
+        filter.formats = [2, 3, 4, 5, 6]; // All vinyl formats (default)
       }
 
       // Apply UI filters - handle different search types
@@ -327,11 +327,24 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
         }
       }
 
-      // Apply format filter (only if not on specific route)
-      if (filtersToUse.format && filtersToUse.format !== 'all' && currentPathNow !== '/cd' && currentPathNow !== '/vinyl') {
+      // Apply format filter
+      if (filtersToUse.format && filtersToUse.format !== 'all') {
         const formatId = FORMAT_MAPPINGS[filtersToUse.format];
         if (formatId && formatId !== 0) {
-          filter.formats = [formatId];
+          if (currentPathNow === '/cd') {
+            // On CD route, only allow CD format
+            if (formatId === 1) {
+              filter.formats = [formatId];
+            }
+          } else if (currentPathNow === '/vinyl') {
+            // On vinyl route, only allow vinyl formats (LP, 12", 10", 7", Cassette)
+            if ([2, 3, 4, 5, 6].includes(formatId)) {
+              filter.formats = [formatId];
+            }
+          } else {
+            // On general route, allow any format
+            filter.formats = [formatId];
+          }
         }
       }
 
