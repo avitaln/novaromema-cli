@@ -145,6 +145,33 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
     };
   };
 
+  // Initialize navigation state from URL
+  const initializeNavigationFromUrl = (): SharedAppState['navigation'] => {
+    const path = window.location.pathname;
+    
+    // Check if we're on a product page
+    if (path.startsWith('/product-page/')) {
+      const rawProductSlug = path.split('/product-page/')[1];
+      if (rawProductSlug) {
+        const productSlug = decodeURIComponent(rawProductSlug);
+        console.log('🔍 Product slug from URL - raw:', rawProductSlug, 'decoded:', productSlug);
+        return {
+          currentView: 'product',
+          previousView: 'gallery', // Default to gallery as previous view
+          productId: productSlug
+        };
+      }
+    }
+    
+    // Check if we're on home page
+    if (path === '/' || path === '') {
+      return { currentView: 'home' };
+    }
+    
+    // Default to gallery for other paths or use component prop
+    return { currentView: component as any || 'gallery' };
+  };
+
   // Initialize shared app state
   const [appState, setAppState] = useState<SharedAppState>({
     homeData: { 
@@ -169,9 +196,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       loading: false, 
       error: null 
     },
-    navigation: { 
-      currentView: component as any || 'gallery'
-    }
+    navigation: initializeNavigationFromUrl()
   });
 
   // For backward compatibility with component prop
@@ -639,6 +664,27 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
       fetchGalleryData(true, nextPage, undefined, undefined);
     }, 100);
   }, [appState.galleryData.currentPage, fetchGalleryData]);
+
+  // ===== BROWSER NAVIGATION HANDLING =====
+  
+  useEffect(() => {
+    const handlePopState = () => {
+      console.log('🔄 Popstate event - URL changed:', window.location.pathname);
+      const newNavigation = initializeNavigationFromUrl();
+      
+      setAppState(prev => ({
+        ...prev,
+        navigation: newNavigation
+      }));
+    };
+
+    // Listen for browser navigation events
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // ===== INITIALIZATION =====
   

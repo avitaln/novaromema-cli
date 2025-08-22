@@ -36,9 +36,10 @@ function router() {
   
   if (path === '/gallery' || path === '/vinyl' || path === '/cd') {
     showReactComponent(app);
-  } else if (path.startsWith('/product/')) {
-    const productId = path.split('/product/')[1];
-    console.log('Showing product page for ID:', productId);
+  } else if (path.startsWith('/product-page/')) {
+    const rawProductId = path.split('/product-page/')[1];
+    const productId = decodeURIComponent(rawProductId);
+    console.log('Showing product page for raw ID:', rawProductId, 'decoded:', productId);
     // Scroll to top immediately when navigating to product page
     window.scrollTo({
       top: 0,
@@ -52,6 +53,15 @@ function router() {
 
 // Make router globally available
 (window as any).router = router;
+
+// Initialize router on page load and handle popstate events
+window.addEventListener('DOMContentLoaded', () => {
+  router();
+});
+
+window.addEventListener('popstate', () => {
+  router();
+});
 
 function showHome(app: HTMLElement) {
   initializeReactComponent(app);
@@ -151,7 +161,7 @@ function showProductPage(app: HTMLElement, productId: string) {
           
           // Create and configure the element
           const element = document.createElement(tagName) as any;
-          element.component = 'page';
+          element.component = 'product';
           element.productId = productId;
           
           // Append directly to container
