@@ -251,7 +251,43 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </span>
         </div>
 
-        {/* 2. Format dropdown - only show on vinyl page */}
+        {/* 2. Mobile search input (early in flow) */}
+        <div className={`${styles.searchContainer} ${styles.onlymobile}`}>
+          <input
+            type="text"
+            placeholder="חיפוש בתוצאות"
+            value={filters.search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className={styles.searchInput}
+          />
+        </div>
+
+        {/* 3. Mobile search type dropdown - no label to save space */}
+        <div className={`${styles.filterDropdown} ${styles.onlymobile}`}>
+          <div className={styles.dropdownContainer}>
+            <div className={styles.dropdownWrapper}>
+              <select 
+                className={styles.dropdownSelect}
+                value={filters.searchType}
+                onChange={(e) => handleFilterChange('searchType', e.target.value)}
+              >
+                {searchTypeTags.map(tag => (
+                  <option key={tag.value} value={tag.value}>
+                    {tag.label}
+                  </option>
+                ))}
+              </select>
+              <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
+                {getSelectedLabel('searchType', searchTypeTags)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Line break to move to next line on mobile */}
+        <div className={`${styles.break} ${styles.onlymobile}`}></div>
+
+        {/* Format dropdown - only show on vinyl page */}
         {mode === 'vinyl' && (
           <div className={styles.filterDropdown}>
             <div className={styles.dropdownContainer}>
@@ -276,7 +312,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </div>
         )}
 
-        {/* 3. Genre dropdown */}
+        {/* Genre dropdown */}
         <div className={styles.filterDropdown}>
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>ז'אנר</label>
@@ -299,7 +335,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </div>
         </div>
 
-        {/* 4. Condition dropdown */}
+        {/* Condition dropdown */}
         <div className={styles.filterDropdown}>
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>מצב</label>
@@ -322,8 +358,11 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </div>
         </div>
 
-        {/* 5. Special categories dropdown */}
-        <div className={styles.filterDropdown}>
+        {/* Line break for mobile before next row */}
+        <div className={`${styles.break} ${styles.onlymobile}`}></div>
+
+        {/* Special categories dropdown */}
+        <div className={`${styles.filterDropdown} ${styles.thirdRowSpacing}`}>
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>קטגוריות מיוחדות</label>
             <div className={styles.dropdownWrapper}>
@@ -345,8 +384,8 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </div>
         </div>
 
-        {/* 6. Sort dropdown */}
-        <div className={styles.filterDropdown}>
+        {/* Sort dropdown */}
+        <div className={`${styles.filterDropdown} ${styles.thirdRowSpacing}`}>
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>מיון לפי</label>
             <div className={styles.dropdownWrapper}>
@@ -368,8 +407,8 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           </div>
         </div>
 
-        {/* 7. Search box (leftmost) */}
-        <div className={styles.searchContainer}>
+        {/* Desktop search box (leftmost on desktop only) */}
+        <div className={`${styles.searchContainer} ${styles.onlydesktop}`}>
           <input
             type="text"
             placeholder="חיפוש בתוצאות"
@@ -379,8 +418,8 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
           />
         </div>
 
-        {/* 8. Search type dropdown */}
-        <div className={styles.filterDropdown}>
+        {/* Desktop search type dropdown */}
+        <div className={`${styles.filterDropdown} ${styles.onlydesktop}`}>
           <div className={styles.dropdownContainer}>
             <label className={styles.dropdownLabel}>סוג חיפוש</label>
             <div className={styles.dropdownWrapper}>
@@ -395,7 +434,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
                   </option>
                 ))}
               </select>
-              <div className={styles.dropdownButton}>
+              <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
                 {getSelectedLabel('searchType', searchTypeTags)}
               </div>
             </div>

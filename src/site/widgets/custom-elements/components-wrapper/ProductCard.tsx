@@ -95,9 +95,9 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
             <span>תמונה לא זמינה</span>
           </div>
         )}
-        {product.ribbon && (
+        {(product.ribbon || product.isNew === false) && (
           <div className={styles.ribbon}>
-            <p>{product.ribbon}</p>
+            <p>{product.ribbon || '∙ יד שניה ∙'}</p>
           </div>
         )}
       </a>

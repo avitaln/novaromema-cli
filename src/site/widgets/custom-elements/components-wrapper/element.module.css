@@ -284,12 +284,12 @@
 }
 
 .productGridWithFilter {
-  padding-top: 6rem; /* Account for fixed header (3rem) + filter bar (~3rem) */
+  padding-top: 7rem; /* Account for fixed header (3rem) + filter bar (~4rem) */
 }
 
 @media (max-width: 50rem) {
   .productGridWithFilter {
-    padding-top: 7rem; /* Account for fixed header (3rem) + mobile filter bar (~4rem) */
+    padding-top: 8rem; /* Account for fixed header (3rem) + mobile filter bar (~5rem) */
   }
 }
 
@@ -372,16 +372,17 @@
   cursor: pointer;
   overflow: hidden;
   background-color: #f5f5f5;
+  display: block;
 }
 
 .productImage {
-  position: relative;
   object-fit: contain;
   width: 100%;
   aspect-ratio: 1;
   border-radius: 2px;
   transition: opacity 0.3s ease, transform 0.2s ease;
   will-change: opacity, transform;
+  display: block;
 }
 
 .productImage.imageLoading {
@@ -464,6 +465,7 @@
   align-items: center;
   font-size: 16px;
   padding: 0 8px;
+  z-index: 10;
 }
 
 .ribbon p {
