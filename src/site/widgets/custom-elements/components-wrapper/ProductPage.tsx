@@ -8,9 +8,10 @@ interface ProductPageProps {
   error: string | null;
   onClose?: () => void;
   onAddToCart?: (product: FullProduct) => void;
+  onAddToWishlist?: (product: FullProduct) => void;
 }
 
-export function ProductPage({ product, loading, error, onClose, onAddToCart }: ProductPageProps) {
+export function ProductPage({ product, loading, error, onClose, onAddToCart, onAddToWishlist }: ProductPageProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
@@ -60,15 +61,33 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
     }
   };
 
-  const handleKeyUp = (e: React.KeyboardEvent, action: 'close' | 'cart') => {
+  const handleAddToWishlist = () => {
+    if (product && onAddToWishlist) {
+      onAddToWishlist(product);
+    }
+  };
+
+  const handleKeyUp = (e: React.KeyboardEvent, action: 'close' | 'cart' | 'wishlist') => {
     if (e.key === ' ' || e.key === 'Enter') {
       e.preventDefault();
       if (action === 'close') {
         handleClose();
       } else if (action === 'cart') {
         handleAddToCart();
+      } else if (action === 'wishlist') {
+        handleAddToWishlist();
       }
     }
+  };
+
+  const formatReleaseDate = (released: number) => {
+    if (!released || released === 0) return '';
+    const date = new Date(released);
+    return date.toLocaleDateString('he-IL', { 
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric' 
+    });
   };
 
   if (loading) {
@@ -121,24 +140,31 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
         </div>
         
         <div className={styles.detailsCont}>
-          <div className={styles.namePanelPopup}>
-            <h2>{`${product.artist} - ${product.title}`}</h2>
-            <div 
-              className={`${styles.btn} ${styles.btnClose}`}
-              role="button" 
-              tabIndex={0} 
-              onClick={handleClose}
-              onKeyUp={(e) => handleKeyUp(e, 'close')}
-            >
-              ✕
-            </div>
-          </div>
+          <h1 className={styles.productPageMainTitle}>{`${product.artist} - ${product.title}${product.shortFormat ? ` (${product.shortFormat})` : ''}`}</h1>
           
-          <a className={styles.priceTextBig}>₪{product.price?.toFixed(2) ?? '0.00'}</a>
+          <div className={styles.priceTextBig}>{product.price?.toFixed(2) ?? '0.00'} ₪</div>
           
-          {product.descmain && (
-            <p dangerouslySetInnerHTML={renderDescription(product.descmain)} />
-          )}
+          <div><span className={styles.label}>Artist:</span> {product.artist}</div>
+          <div><span className={styles.label}>Title:</span> {product.title}</div>
+          {product.label ? <div><span className={styles.label}>Label:</span> {product.label}</div> : <div></div>}
+          {product.metadata?.format ? <div><span className={styles.label}>Format:</span> {product.metadata.format}</div> : <div></div>}
+          {product.country ? <div><span className={styles.label}>Country:</span> {product.country}</div> : <div></div>}
+          {product.released && product.released !== 0 ? <div><span className={styles.label}>Released:</span> {formatReleaseDate(product.released)}</div> : <div></div>}
+
+          {(product.metadata?.media || product.metadata?.sleeve) && <h3>Condition</h3>}
+          {product.metadata?.media ? <div><span className={styles.label}>Media:</span> {product.metadata.media}</div> : <div></div>}
+          {product.metadata?.sleeve ? <div><span className={styles.label}>Sleeve:</span> {product.metadata.sleeve}</div> : <div></div>}
+
+          {product.metadata?.genres && product.metadata.genres.length > 0 && <h3>Genres</h3>}
+          {product.metadata?.genres && product.metadata.genres.length > 0 && <div>{product.metadata.genres.join(', ')}</div>}
+
+          {product.metadata?.styles && product.metadata.styles.length > 0 && <h3>Styles</h3>}
+          {product.metadata?.styles && product.metadata.styles.length > 0 && <div>{product.metadata.styles.join(', ')}</div>}
+
+          {product.metadata?.comments && <h3>Comments</h3>}
+          {product.metadata?.comments && <div>{product.metadata.comments}</div>}
+
+          <div></div> {/* Empty grid cell for spacing above button */}
           
           <div 
             role="button" 
@@ -150,19 +176,22 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart }: P
             הוספה לסל
           </div>
           
-          {product.desctracklist && (
-            <div>
-              <h3>Track List</h3>
-              <div dangerouslySetInnerHTML={renderDescription(product.desctracklist)} />
-            </div>
+
+
+          {(product.metadata?.trackList || product.desctracklist) && <h3>Tracklist</h3>}
+          {(product.metadata?.trackList || product.desctracklist) && (
+            <div dangerouslySetInnerHTML={renderDescription(product.metadata?.trackList || product.desctracklist || '')} />
           )}
-          
-          {product.descnotes && (
-            <div>
-              <h3>Notes</h3>
-              <div dangerouslySetInnerHTML={renderDescription(product.descnotes)} />
-            </div>
-          )}
+
+          <div 
+            className={`${styles.btn} ${styles.btnClose}`}
+            role="button" 
+            tabIndex={0} 
+            onClick={handleClose}
+            onKeyUp={(e) => handleKeyUp(e, 'close')}
+          >
+            ✕
+          </div>
         </div>
       </div>
     </div>

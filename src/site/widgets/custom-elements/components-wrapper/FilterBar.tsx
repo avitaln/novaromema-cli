@@ -242,200 +242,329 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
 
   return (
     <div className={styles.filterBarContainer}>
-      <div className={styles.filterBar}>
+      
+      {/* Desktop Layout with 3 Column Containers */}
+      <div className={`${styles.filterBar} ${styles.onlydesktop}`}>
         
-        {/* 1. Results count (rightmost) */}
-        <div className={styles.resultsCount}>
-          <span className={styles.resultsLabel}>
-            מציג {total || 0} {getItemType()}
-          </span>
-        </div>
-
-        {/* 2. Mobile search input (early in flow) */}
-        <div className={`${styles.searchContainer} ${styles.onlymobile}`}>
-          <input
-            type="text"
-            placeholder="חיפוש בתוצאות"
-            value={filters.search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
-        {/* 3. Mobile search type dropdown - no label to save space */}
-        <div className={`${styles.filterDropdown} ${styles.onlymobile}`}>
-          <div className={styles.dropdownContainer}>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.searchType}
-                onChange={(e) => handleFilterChange('searchType', e.target.value)}
-              >
-                {searchTypeTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
-                {getSelectedLabel('searchType', searchTypeTags)}
+        {/* Column 1: Results + Format/Genre */}
+        <div className={styles.desktopColumn}>
+          <div className={styles.resultsCount}>
+            <span className={styles.resultsLabel}>
+              מציג {total || 0} {getItemType()}
+            </span>
+          </div>
+          
+          {/* Format dropdown - only show on vinyl page */}
+          {mode === 'vinyl' && (
+            <div className={styles.filterDropdown}>
+              <div className={styles.dropdownContainer}>
+                <label className={styles.dropdownLabel}>פורמט</label>
+                <div className={styles.dropdownWrapper}>
+                  <select 
+                    className={styles.dropdownSelect}
+                    value={filters.format}
+                    onChange={(e) => handleFilterChange('format', e.target.value)}
+                  >
+                    {getFormatTags().map(tag => (
+                      <option key={tag.value} value={tag.value}>
+                        {tag.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className={`${styles.dropdownButton} ${!isDefault('format') ? styles.active : ''}`}>
+                    {getSelectedLabel('format', getFormatTags())}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          )}
 
-        {/* 4. Line break to move to next line on mobile */}
-        <div className={`${styles.break} ${styles.onlymobile}`}></div>
-
-        {/* Format dropdown - only show on vinyl page */}
-        {mode === 'vinyl' && (
+          {/* Genre dropdown */}
           <div className={styles.filterDropdown}>
             <div className={styles.dropdownContainer}>
-              <label className={styles.dropdownLabel}>פורמט</label>
+              <label className={styles.dropdownLabel}>ז'אנר</label>
               <div className={styles.dropdownWrapper}>
                 <select 
                   className={styles.dropdownSelect}
-                  value={filters.format}
-                  onChange={(e) => handleFilterChange('format', e.target.value)}
+                  value={filters.genre}
+                  onChange={(e) => handleFilterChange('genre', e.target.value)}
                 >
-                  {getFormatTags().map(tag => (
+                  {genreTags.map(tag => (
                     <option key={tag.value} value={tag.value}>
                       {tag.label}
                     </option>
                   ))}
                 </select>
-                <div className={`${styles.dropdownButton} ${!isDefault('format') ? styles.active : ''}`}>
-                  {getSelectedLabel('format', getFormatTags())}
+                <div className={`${styles.dropdownButton} ${!isDefault('genre') ? styles.active : ''}`}>
+                  {getSelectedLabel('genre', genreTags)}
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Genre dropdown */}
-        <div className={styles.filterDropdown}>
-          <div className={styles.dropdownContainer}>
-            <label className={styles.dropdownLabel}>ז'אנר</label>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.genre}
-                onChange={(e) => handleFilterChange('genre', e.target.value)}
-              >
-                {genreTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('genre') ? styles.active : ''}`}>
-                {getSelectedLabel('genre', genreTags)}
+        {/* Column 2: Condition + Special + Sort */}
+        <div className={styles.desktopColumn}>
+          {/* Condition dropdown */}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>מצב</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.condition}
+                  onChange={(e) => handleFilterChange('condition', e.target.value)}
+                >
+                  {conditionTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('condition') ? styles.active : ''}`}>
+                  {getSelectedLabel('condition', conditionTags)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Special categories dropdown */}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>קטגוריות מיוחדות</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.special}
+                  onChange={(e) => handleFilterChange('special', e.target.value)}
+                >
+                  {specialTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('special') ? styles.active : ''}`}>
+                  {getSelectedLabel('special', specialTags)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort dropdown */}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>מיון לפי</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.sort}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
+                >
+                  {sortTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('sort') ? styles.active : ''}`}>
+                  {getSelectedLabel('sort', sortTags)}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Condition dropdown */}
-        <div className={styles.filterDropdown}>
-          <div className={styles.dropdownContainer}>
-            <label className={styles.dropdownLabel}>מצב</label>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.condition}
-                onChange={(e) => handleFilterChange('condition', e.target.value)}
-              >
-                {conditionTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('condition') ? styles.active : ''}`}>
-                {getSelectedLabel('condition', conditionTags)}
+        {/* Column 3: Search + Search Type */}
+        <div className={styles.desktopColumn}>
+          {/* Desktop search box */}
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="חיפוש בתוצאות"
+              value={filters.search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+
+          {/* Desktop search type dropdown */}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>לפי</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.searchType}
+                  onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                >
+                  {searchTypeTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
+                  {getSelectedLabel('searchType', searchTypeTags)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Layout with Row Containers */}
+      <div className={`${styles.mobileFilterGrid} ${styles.onlymobile}`}>
+        
+        {/* Row 1: Results + Search + Search Type */}
+        <div className={`${styles.mobileRow} ${styles.mobileRow1}`}>
+          <div className={styles.resultsCount}>
+            <span className={styles.resultsLabel}>
+              מציג {total || 0} {getItemType()}
+            </span>
+          </div>
+          <div className={styles.searchContainer}>
+            <input
+              type="text"
+              placeholder="חיפוש בתוצאות"
+              value={filters.search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>לפי</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.searchType}
+                  onChange={(e) => handleFilterChange('searchType', e.target.value)}
+                >
+                  {searchTypeTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
+                  {getSelectedLabel('searchType', searchTypeTags)}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Line break for mobile before next row */}
-        <div className={`${styles.break} ${styles.onlymobile}`}></div>
-
-        {/* Special categories dropdown */}
-        <div className={`${styles.filterDropdown} ${styles.thirdRowSpacing}`}>
-          <div className={styles.dropdownContainer}>
-            <label className={styles.dropdownLabel}>קטגוריות מיוחדות</label>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.special}
-                onChange={(e) => handleFilterChange('special', e.target.value)}
-              >
-                {specialTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('special') ? styles.active : ''}`}>
-                {getSelectedLabel('special', specialTags)}
+        {/* Row 2: Format + Genre + Condition */}
+        <div className={`${styles.mobileRow} ${styles.mobileRow2}`}>
+          {mode === 'vinyl' && (
+            <div className={styles.filterDropdown}>
+              <div className={styles.dropdownContainer}>
+                <label className={styles.dropdownLabel}>פורמט</label>
+                <div className={styles.dropdownWrapper}>
+                  <select 
+                    className={styles.dropdownSelect}
+                    value={filters.format}
+                    onChange={(e) => handleFilterChange('format', e.target.value)}
+                  >
+                    {getFormatTags().map(tag => (
+                      <option key={tag.value} value={tag.value}>
+                        {tag.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className={`${styles.dropdownButton} ${!isDefault('format') ? styles.active : ''}`}>
+                    {getSelectedLabel('format', getFormatTags())}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>ז'אנר</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.genre}
+                  onChange={(e) => handleFilterChange('genre', e.target.value)}
+                >
+                  {genreTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('genre') ? styles.active : ''}`}>
+                  {getSelectedLabel('genre', genreTags)}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>מצב</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.condition}
+                  onChange={(e) => handleFilterChange('condition', e.target.value)}
+                >
+                  {conditionTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('condition') ? styles.active : ''}`}>
+                  {getSelectedLabel('condition', conditionTags)}
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sort dropdown */}
-        <div className={`${styles.filterDropdown} ${styles.thirdRowSpacing}`}>
-          <div className={styles.dropdownContainer}>
-            <label className={styles.dropdownLabel}>מיון לפי</label>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.sort}
-                onChange={(e) => handleFilterChange('sort', e.target.value)}
-              >
-                {sortTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('sort') ? styles.active : ''}`}>
-                {getSelectedLabel('sort', sortTags)}
+        {/* Row 3: Special + Sort */}
+        <div className={`${styles.mobileRow} ${styles.mobileRow3}`}>
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>קטגוריות מיוחדות</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.special}
+                  onChange={(e) => handleFilterChange('special', e.target.value)}
+                >
+                  {specialTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('special') ? styles.active : ''}`}>
+                  {getSelectedLabel('special', specialTags)}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Desktop search box (leftmost on desktop only) */}
-        <div className={`${styles.searchContainer} ${styles.onlydesktop}`}>
-          <input
-            type="text"
-            placeholder="חיפוש בתוצאות"
-            value={filters.search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
-        {/* Desktop search type dropdown */}
-        <div className={`${styles.filterDropdown} ${styles.onlydesktop}`}>
-          <div className={styles.dropdownContainer}>
-            <label className={styles.dropdownLabel}>סוג חיפוש</label>
-            <div className={styles.dropdownWrapper}>
-              <select 
-                className={styles.dropdownSelect}
-                value={filters.searchType}
-                onChange={(e) => handleFilterChange('searchType', e.target.value)}
-              >
-                {searchTypeTags.map(tag => (
-                  <option key={tag.value} value={tag.value}>
-                    {tag.label}
-                  </option>
-                ))}
-              </select>
-              <div className={`${styles.dropdownButton} ${!isDefault('searchType') ? styles.active : ''}`}>
-                {getSelectedLabel('searchType', searchTypeTags)}
+          <div className={styles.filterDropdown}>
+            <div className={styles.dropdownContainer}>
+              <label className={styles.dropdownLabel}>מיון לפי</label>
+              <div className={styles.dropdownWrapper}>
+                <select 
+                  className={styles.dropdownSelect}
+                  value={filters.sort}
+                  onChange={(e) => handleFilterChange('sort', e.target.value)}
+                >
+                  {sortTags.map(tag => (
+                    <option key={tag.value} value={tag.value}>
+                      {tag.label}
+                    </option>
+                  ))}
+                </select>
+                <div className={`${styles.dropdownButton} ${!isDefault('sort') ? styles.active : ''}`}>
+                  {getSelectedLabel('sort', sortTags)}
+                </div>
               </div>
             </div>
           </div>

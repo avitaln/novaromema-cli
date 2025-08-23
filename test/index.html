@@ -9,19 +9,27 @@
       -webkit-font-smoothing: antialiased; 
       -moz-osx-font-smoothing: grayscale; 
     }
-    /* Load Assistant-SemiBold for local testing */
+
     @font-face {
-      font-family: 'Assistant-SemiBold';
-      font-style: normal;
-      font-display: swap;
-      src: url('https://static.parastorage.com/tag-bundler/api/v1/fonts-cache/googlefont/woff2/s/assistant/v8/2sDPZGJYnIjSi6H75xkZZE1I0yCmYzzQtjhgEGQ.woff2') format('woff2'),
-           url('https://static.parastorage.com/tag-bundler/api/v1/fonts-cache/googlefont/woff2/s/assistant/v8/2sDPZGJYnIjSi6H75xkZZE1I0yCmYzzQtmZgEGQ.woff2') format('woff2');
+        font-family: 'assistant-semibold';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url('https://static.parastorage.com/tag-bundler/api/v1/fonts-cache/googlefont/woff2/s/assistant/v8/2sDPZGJYnIjSi6H75xkZZE1I0yCmYzzQtjhgEGQ.woff2') format('woff2');
     }
-    
+
+    @font-face {
+        font-family: 'assistant-semibold';
+        font-style: normal;
+        font-weight: 700;
+        font-display: swap;
+        src: url('https://static.parastorage.com/tag-bundler/api/v1/fonts-cache/googlefont/woff2/s/assistant/v8/2sDPZGJYnIjSi6H75xkZZE1I0yCmYzzQtmZgEGQ.woff2') format('woff2');
+    }
+
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
+      font-family: 'assistant-semibold', sans-serif;
       overflow-x: hidden;
     }
     

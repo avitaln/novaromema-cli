@@ -26,7 +26,7 @@
   padding: 0;
   font-size: 14px;
   /* Single source of truth for typography across all internal components */
-  font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
+  font-family: 'assistant-semibold', sans-serif;
   margin: 0;
   direction: rtl;
 }
@@ -126,8 +126,12 @@
 }
 
 /* Override center alignment for product page title */
-.namePanelPopup h2 {
+.detailsCont h2 {
   text-align: left !important;
+  font-size: inherit !important;
+  font-weight: normal !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .root[data-fill-screen="true"] .productGallery {
@@ -143,7 +147,6 @@
 .root code {
   color: var(--code-color);
   font-size: 0.8rem;
-  font-weight: bolder;
 }
 
 /* Filter Header Styles */
@@ -255,8 +258,7 @@
   padding: 0;
   background-color: rgb(238, 238, 238);
   min-height: calc(100vh - 80px); /* Account for header */
-  font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
-  font-weight: 600;
+  font-family: 'assistant-semibold', sans-serif;
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -284,7 +286,7 @@
 }
 
 .productGridWithFilter {
-  padding-top: 7rem; /* Account for fixed header (3rem) + filter bar (~4rem) */
+  padding-top: 5rem; /* Account for fixed header (3rem) + filter bar (~4rem) */
 }
 
 @media (max-width: 50rem) {
@@ -350,8 +352,6 @@
   background-color: white;
   font-size: 16px;
   color: black;
-  font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
-  font-weight: 600;
   box-sizing: border-box;
   flex-shrink: 0;
   /* Prevent layout shifts during image loading */
@@ -499,10 +499,10 @@
 }
 
 .artistName {
-  font-weight: 900 !important;
+  font-weight: 700 !important;
   font-size: larger;
-  text-shadow: 1px 0 0 currentColor !important;
-  letter-spacing: 0.8px;
+  /* text-shadow: 1px 0 0 currentColor !important; */
+  letter-spacing: 0.5px;
 }
 
 .pricePanel {
@@ -546,8 +546,7 @@
   background-color: white;
   color: black;
   font-size: 16px;
-  font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
-  font-weight: 600;
+  font-family: 'assistant-semibold', sans-serif;
   /* Prevent layout shifts and improve performance */
   will-change: scroll-position;
   contain: layout style paint;
@@ -665,20 +664,13 @@
 
 .detailsCont {
   margin: 30px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem 1rem;
 }
 
-.namePanelPopup {
-  display: flex;
-  align-items: start;
-  justify-content: flex-start;
-}
-
-.namePanelPopup h2 {
-  margin: 0;
-  padding: 0;
-  padding-left: 0;
-  flex-grow: 1;
-  color: black;
+.detailsCont div:empty {
+  height: 1.2em; /* Maintain row height for empty cells */
 }
 
 .btnClose {
@@ -731,7 +723,7 @@
   align-items: center;
   justify-content: center;
   color: #333;
-  font-weight: 600;
+  font-weight: 700;
   animation: fadeInScale 0.2s ease-out;
   gap: 1rem;
 }
@@ -782,7 +774,7 @@
   padding: 0.75rem 1.5rem;
   border-radius: 6px;
   font-size: 0.9rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: opacity 0.2s ease;
 }
@@ -817,11 +809,11 @@
   border: none;
   padding: 12px 24px;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-  font-family: 'Assistant-SemiBold', Helvetica, sans-serif;
+  font-family: 'assistant-semibold', sans-serif;
 }
 
 .nextPageButton:hover {
@@ -840,5 +832,34 @@
 /* Loading indicator for bottom of grid */
 .loadingIndicator {
   display: none;
+}
+
+/* Product Page CSS Grid Layout */
+.detailsCont > *:not(.btnClose) {
+  grid-column: 1;
+}
+
+.detailsCont .btnClose {
+  grid-column: 2;
+  grid-row: 1 / -1;
+  align-self: start;
+  justify-self: center;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.detailsCont h3 {
+  margin: 1rem 0 0 0;
+  font-size: 16px;
+}
+
+.detailsCont h2 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: normal;
+  color: inherit;
+  line-height: inherit;
 }
 

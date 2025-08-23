@@ -150,7 +150,6 @@ export class ProductElement extends LitElement {
         text-align: left;
         height: 60px;
         font-size: 14px;
-        /* font-weight: 700; */
       }
 
       .name-panel-popup {
