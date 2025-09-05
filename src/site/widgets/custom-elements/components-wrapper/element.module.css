@@ -263,10 +263,10 @@
   overflow-x: hidden;
 }
 
-/* Mobile: Add extra top margin to prevent FilterBar overlap */
+/* Mobile: Account for header height since FilterBar pulls up to touch it */
 @media (max-width: 50rem) {
   .productGallery {
-    margin-top: 8.4rem; /* Account for fixed FilterBar height on mobile */
+    margin-top: 3rem; /* Account for fixed header height */
   }
 }
 
@@ -298,7 +298,7 @@
 
 @media (max-width: 50rem) {
   .productGridWithFilter {
-    padding-top: 8rem; /* Account for fixed header (3rem) + mobile filter bar 3-row grid (~17rem) */
+    padding-top: 0; /* No extra padding needed - FilterBar flows naturally above */
   }
 }
 

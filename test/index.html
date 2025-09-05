@@ -57,6 +57,14 @@
       right: 0;
       z-index: 1001;
       box-sizing: border-box;
+      transition: transform 0.3s ease-in-out;
+    }
+    
+    /* Hide header on scroll (mobile only) */
+    @media (max-width: 50rem) {
+      .header.header-hidden {
+        transform: translateY(-100%);
+      }
     }
     
     .header-title {
@@ -109,6 +117,171 @@
 <body>
   <div id="app"></div>
 
+  <script>
+    // Header hide/show and FilterBar sticky behavior (mobile only)
+    let lastScrollY = 0;
+    let isScrolling = false;
+    let filterBarInitialOffset = null;
+
+    function handleScroll() {
+      if (!isScrolling) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const header = document.querySelector('.header');
+          const filterBar = document.querySelector('[data-filterbar="true"]');
+          
+          // Only apply on mobile (max-width: 50rem = 800px)
+          if (window.innerWidth <= 800) {
+            
+            // Simple approach: Handle header AND filterbar with direct JavaScript
+            if (header) {
+              const isHeaderHidden = currentScrollY > lastScrollY && currentScrollY > 50;
+              
+              if (isHeaderHidden && !header.classList.contains('header-hidden')) {
+                // Hide header
+                header.classList.add('header-hidden');
+                console.log('Header hidden');
+                
+                // Make FilterBar fixed at top
+                if (filterBar) {
+                  filterBar.style.position = 'fixed';
+                  filterBar.style.top = '0';
+                  filterBar.style.left = '0';
+                  filterBar.style.right = '0';
+                  filterBar.style.zIndex = '1000';
+                  console.log('FilterBar fixed at top');
+                }
+              } else if (!isHeaderHidden && header.classList.contains('header-hidden')) {
+                // Show header
+                header.classList.remove('header-hidden');
+                console.log('Header shown');
+                
+                // Make FilterBar fixed below header
+                if (filterBar) {
+                  filterBar.style.position = 'fixed';
+                  filterBar.style.top = '3rem';
+                  filterBar.style.left = '0';
+                  filterBar.style.right = '0';
+                  filterBar.style.zIndex = '1000';
+                  console.log('FilterBar fixed below header');
+                }
+              }
+            }
+            
+            // Simple sticky logic for FilterBar
+            if (filterBar && !filterBar.hasAttribute('data-is-sticky')) {
+              const rect = filterBar.getBoundingClientRect();
+              const shouldBeFixed = window.scrollY > 100; // Simple threshold
+              
+              if (shouldBeFixed) {
+                const headerHeight = header && !header.classList.contains('header-hidden') ? 48 : 0;
+                filterBar.style.position = 'fixed';
+                filterBar.style.top = headerHeight + 'px';
+                filterBar.style.left = '0';
+                filterBar.style.right = '0';
+                filterBar.style.zIndex = '1000';
+                filterBar.setAttribute('data-is-sticky', 'true');
+                console.log('FilterBar made sticky');
+              }
+            }
+            
+          } else {
+            // Desktop - reset everything
+            if (header) header.classList.remove('header-hidden');
+            if (filterBar) {
+              filterBar.style.position = '';
+              filterBar.style.top = '';
+              filterBar.style.left = '';
+              filterBar.style.right = '';
+              filterBar.style.zIndex = '';
+              filterBar.removeAttribute('data-is-sticky');
+            }
+          }
+          
+          lastScrollY = currentScrollY;
+          isScrolling = false;
+        });
+      }
+      isScrolling = true;
+    }
+
+    // Debounced resize handler
+    let resizeTimer;
+    function handleResize() {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const header = document.querySelector('.header');
+        const filterBar = document.querySelector('[data-filterbar="true"]');
+        
+        if (window.innerWidth > 800) {
+          if (header) header.classList.remove('header-hidden');
+          if (filterBar) {
+            filterBar.style.position = '';
+            filterBar.style.top = '';
+            filterBar.style.left = '';
+            filterBar.style.right = '';
+            filterBar.style.zIndex = '';
+            filterBar.removeAttribute('data-is-sticky');
+          }
+        }
+        
+        // Reset FilterBar offset on resize
+        filterBarInitialOffset = null;
+      }, 100);
+    }
+
+    // Add event listeners when DOM is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wait a bit for React components to mount
+      setTimeout(() => {
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleResize);
+        
+        // Debug: Check if filterBar exists and test different selectors
+        let filterBar = document.querySelector('[data-filterbar="true"]');
+        console.log('FilterBar found with data-filterbar:', filterBar);
+        
+        if (!filterBar) {
+          filterBar = document.querySelector('[class*="filterBarContainer"]');
+          console.log('FilterBar found with [class*="filterBarContainer"]:', filterBar);
+        }
+        
+        if (!filterBar) {
+          filterBar = document.querySelector('div[class*="filterBar"]');
+          console.log('FilterBar found with div[class*="filterBar"]:', filterBar);
+        }
+        
+        if (!filterBar) {
+          const allDivs = document.querySelectorAll('div');
+          console.log('All divs:', allDivs.length);
+          allDivs.forEach((div, i) => {
+            if (div.className && div.className.includes('filter')) {
+              console.log(`Div ${i} with filter in class:`, div.className);
+            }
+          });
+        }
+        
+        if (filterBar) {
+          console.log('FilterBar classes:', filterBar.className);
+          console.log('FilterBar computed style position:', window.getComputedStyle(filterBar).position);
+          console.log('FilterBar computed style top:', window.getComputedStyle(filterBar).top);
+          console.log('FilterBar offsetTop:', filterBar.offsetTop);
+          console.log('FilterBar initial position:', filterBar.getBoundingClientRect().top);
+          
+          // Debug all computed styles that might affect positioning
+          const computedStyle = window.getComputedStyle(filterBar);
+          console.log('FilterBar margins:', {
+            top: computedStyle.marginTop,
+            bottom: computedStyle.marginBottom,
+            left: computedStyle.marginLeft,
+            right: computedStyle.marginRight
+          });
+          console.log('FilterBar transform:', computedStyle.transform);
+          console.log('FilterBar CSS variable --filterbar-top:', computedStyle.getPropertyValue('--filterbar-top'));
+        }
+      }, 1000);
+    });
+  </script>
   <script type="module" src="./main.ts"></script>
 </body>
 </html>
