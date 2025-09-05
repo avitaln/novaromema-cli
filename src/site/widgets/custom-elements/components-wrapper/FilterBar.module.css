@@ -88,7 +88,7 @@
 }
 
 .resultsLabel {
-  font-family: Assistant-SemiBold, Helvetica, sans-serif;
+  font-family: assistant-v2, Helvetica, sans-serif;
 }
 
 /* Filter dropdowns */
@@ -103,7 +103,7 @@
   flex-direction: row;
   align-items: center;
   gap: 0.375rem; /* 6px to rem */
-  font-family: Assistant-SemiBold, Helvetica, sans-serif;
+  font-family: assistant-v2, Helvetica, sans-serif;
 }
 
 /* Mobile specific dropdown container spacing */
@@ -134,7 +134,7 @@
   border: 0.0625rem solid #ccc; /* 1px to rem */
   border-radius: 0.25rem; /* 4px to rem */
   font-size: 1rem; /* 16px to rem */
-  font-family: Assistant-SemiBold, Helvetica, sans-serif;
+  font-family: assistant-v2, Helvetica, sans-serif;
   text-align: right;
   white-space: nowrap;
   pointer-events: none;
@@ -194,7 +194,7 @@
   padding: 0 0.75rem; /* 12px to rem */
   outline: none;
   font-size: 1rem; /* 16px to rem */
-  font-family: Assistant-SemiBold, Helvetica, sans-serif;
+  font-family: assistant-v2, Helvetica, sans-serif;
   text-align: right;
   direction: rtl;
 }

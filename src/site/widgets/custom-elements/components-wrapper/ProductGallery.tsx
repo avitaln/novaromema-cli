@@ -178,14 +178,14 @@ export function ProductGallery({
   if (error && products.length === 0) {
     return (
       <div className={styles.productGallery}>
+        <FilterBar 
+          mode={mode}
+          total={total}
+          initialFilters={filters}
+          onFilterChange={onFiltersChange}
+        />
         <div className={styles.error}>
           <p>שגיאה בטעינת המוצרים: {error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className={styles.retryButton}
-          >
-            נסה שוב
-          </button>
         </div>
       </div>
     );

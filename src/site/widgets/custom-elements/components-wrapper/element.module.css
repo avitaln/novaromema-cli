@@ -26,7 +26,7 @@
   padding: 0;
   font-size: 14px;
   /* Single source of truth for typography across all internal components */
-  font-family: 'assistant-semibold', sans-serif;
+  font-family: 'assistant-v2', sans-serif;
   margin: 0;
   direction: rtl;
 }
@@ -258,7 +258,7 @@
   padding: 0;
   background-color: rgb(238, 238, 238);
   min-height: calc(100vh - 80px); /* Account for header */
-  font-family: 'assistant-semibold', sans-serif;
+  font-family: 'assistant-v2', sans-serif;
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -553,7 +553,7 @@
   background-color: white;
   color: black;
   font-size: 16px;
-  font-family: 'assistant-semibold', sans-serif;
+  font-family: 'assistant-v2', sans-serif;
   /* Prevent layout shifts and improve performance */
   will-change: scroll-position;
   contain: layout style paint;
@@ -816,7 +816,7 @@
   border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.2s;
-  font-family: 'assistant-semibold', sans-serif;
+  font-family: 'assistant-v2', sans-serif;
 }
 
 .nextPageButton:hover {

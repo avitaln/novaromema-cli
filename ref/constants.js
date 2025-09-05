@@ -1,6 +1,6 @@
 import { css } from 'lit';
 
-export const font_family = css`Assistant-SemiBold, Helvetica, sans-serif`
+export const font_family = css`assistant-v2, Helvetica, sans-serif`
 
 export const device = screen.width <= 480 ? "m" : "d"
 
