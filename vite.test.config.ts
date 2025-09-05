@@ -93,6 +93,7 @@ export default defineConfig({
   // Define environment variables for development
   define: {
     'process.env.NODE_ENV': '"development"',
+    'import.meta.env.VITE_IS_TEST': '"true"',
   },
 
   // Enable TypeScript decorators

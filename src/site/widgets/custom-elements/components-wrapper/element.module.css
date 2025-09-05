@@ -762,11 +762,7 @@
 
 .error, .loadMoreError {
   text-align: center;
-  padding: 2rem;
-  background: rgba(255, 107, 107, 0.1);
-  border: 1px solid var(--error-color);
-  border-radius: 8px;
-  margin: 1rem 0;
+  margin-top: 2rem;
 }
 
 .error p, .loadMoreError p {
