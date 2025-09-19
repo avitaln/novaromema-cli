@@ -46,7 +46,7 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
             </p>
             <div className={styles.homeButtons}>
               {buttonLinks.map((btn) => (
-                <a key={btn.title} className={styles.homeButton} href={btn.href} role="button">
+                <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button">
                   {btn.title}
                 </a>
               ))}
@@ -75,7 +75,7 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
           </p>
           <div className={styles.homeButtons}>
             {buttonLinks.map((btn) => (
-              <a key={btn.title} className={styles.homeButton} href={btn.href} role="button">
+              <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button">
                 {btn.title}
               </a>
             ))}

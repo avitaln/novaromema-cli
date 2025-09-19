@@ -802,8 +802,7 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
   
   return (
     <div 
-      className={styles.root} 
-      data-fill-screen="true"
+      className={styles.root}
     >
       {renderComponent()}
     </div>

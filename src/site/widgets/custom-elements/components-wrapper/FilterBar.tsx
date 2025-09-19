@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import styles from './FilterBar.module.css';
+import styles from './element.module.css';
 
 // Constants from reference implementation
 const conditionTags = [
