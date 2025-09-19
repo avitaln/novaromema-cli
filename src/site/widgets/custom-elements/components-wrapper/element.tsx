@@ -12,8 +12,6 @@ import styles from './element.module.css';
 interface Props {
   displayName?: string;
   height?: string; // Height constraint for the gallery
-  responsive?: string; // "true" to enable responsive height
-  fillScreen?: string; // "false" to disable fill screen (enabled by default)
   component?: string; // "gallery" | "card" | "page" | "home"
   productId?: string; // For ProductCard or ProductPage
   productData?: string; // JSON string of product data for ProductCard
@@ -130,7 +128,7 @@ const SPECIAL_MAPPINGS: Record<string, string> = {
 // Constants
 const PRODUCTS_PER_PAGE = 25;
 
-function CustomElement({ displayName, height, responsive, fillScreen, component = 'gallery', productId, productData }: Props) {
+function CustomElement({ displayName, height, component = 'gallery', productId, productData }: Props) {
   // Initialize filters from URL parameters
   const initializeFiltersFromUrl = (): FilterOptions => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -805,7 +803,7 @@ function CustomElement({ displayName, height, responsive, fillScreen, component 
   return (
     <div 
       className={styles.root} 
-      data-fill-screen={appState.navigation.currentView === 'product' ? "true" : fillScreen !== "false"}
+      data-fill-screen="true"
     >
       {renderComponent()}
     </div>
@@ -820,8 +818,6 @@ const customElement = reactToWebComponent(
     props: {
       displayName: 'string',
       height: 'string',
-      responsive: 'string',
-      fillScreen: 'string',
       component: 'string',
       productId: 'string',
       productData: 'string',
