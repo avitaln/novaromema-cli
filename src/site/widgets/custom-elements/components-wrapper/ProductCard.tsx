@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { CatalogAPI, type PartialProduct } from './api';
+import { createProductRoute } from './routes';
 import styles from './element.module.css';
 
 interface ProductCardProps {
@@ -22,7 +23,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
       console.warn('⚠️ Product has no slug:', product);
       return '#';
     }
-    return `/product-page/${product.slug}`;
+    return createProductRoute(product.slug);
   }, [product.slug]);
   
   const handleImageError = () => {

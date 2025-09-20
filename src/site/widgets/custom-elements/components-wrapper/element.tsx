@@ -10,12 +10,13 @@ import { About } from './About';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
+import { ROUTES, createProductRoute, parseProductRoute } from './routes';
 import styles from './element.module.css';
 
 interface Props {
   displayName?: string;
   height?: string; // Height constraint for the gallery
-  component?: string; // "gallery" | "card" | "page" | "home"
+  component?: string; // "gallery" | "page" | "home"
   productId?: string; // For ProductCard or ProductPage
   productData?: string; // JSON string of product data for ProductCard
 }
@@ -68,7 +69,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'card' | 'about';
+    currentView: 'home' | 'gallery' | 'product' | 'about';
     previousView?: 'home' | 'gallery' | 'about';
     productId?: string;
   };
@@ -152,8 +153,8 @@ function CustomElement({ displayName, height, component, productId, productData 
     console.log('🔄 Initializing navigation from URL:', path);
     
     // Check if we're on a product page
-    if (path.startsWith('/product-page/')) {
-      const rawProductSlug = path.split('/product-page/')[1];
+    if (path.startsWith(`${ROUTES.PRODUCT}/`)) {
+      const rawProductSlug = parseProductRoute(path);
       if (rawProductSlug) {
         const productSlug = decodeURIComponent(rawProductSlug);
         console.log('🔍 Product slug from URL - raw:', rawProductSlug, 'decoded:', productSlug);
@@ -166,19 +167,19 @@ function CustomElement({ displayName, height, component, productId, productData 
     }
     
     // Check for specific gallery routes (CD and Vinyl only)
-    if (path === '/cd' || path === '/vinyl') {
+    if (path === ROUTES.CD || path === ROUTES.VINYL) {
       console.log('🖼️ Gallery route detected:', path);
       return { currentView: 'gallery' };
     }
     
     // Check for about page
-    if (path === '/about') {
+    if (path === ROUTES.ABOUT) {
       console.log('ℹ️ About route detected:', path);
       return { currentView: 'about' };
     }
     
     // Check if we're on home page or no nested route (default to home)
-    if (path === '/' || path === '' || !path.includes('/')) {
+    if (path === ROUTES.HOME || path === '' || !path.includes('/')) {
       console.log('🏠 Home route detected:', path);
       return { currentView: 'home' };
     }
@@ -523,7 +524,7 @@ function CustomElement({ displayName, height, component, productId, productData 
     console.log('🔄 Navigating to product slug:', product.slug);
     
     // Update browser URL (same format as ref/product-gallery.js)
-    window.history.pushState({ productPage: product.slug }, '', `/product-page/${product.slug}`);
+    window.history.pushState({ productPage: product.slug }, '', createProductRoute(product.slug));
     
     // Save current scroll position
     const currentScrollPosition = window.scrollY;
@@ -872,11 +873,6 @@ function CustomElement({ displayName, height, component, productId, productData 
           />
         );
         
-      case 'card':
-        if (staticProduct) {
-          return <ProductCard product={staticProduct} />;
-        }
-        return <div>No product data provided for ProductCard</div>;
         
       case 'about':
         return <About />;

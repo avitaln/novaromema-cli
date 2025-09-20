@@ -7,6 +7,7 @@ import { About } from './About';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
+import { ROUTES, createProductRoute, parseProductRoute } from './routes';
 import styles from './element.module.css';
 
 interface FilterOptions {
@@ -57,7 +58,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'card' | 'about';
+    currentView: 'home' | 'gallery' | 'product' | 'about';
     previousView?: 'home' | 'gallery';
     productId?: string;
   };
@@ -215,31 +216,27 @@ const Router: React.FC<RouterProps> = ({
   };
 
   const navigateToProduct = (productId: string) => {
-    window.history.pushState({}, '', `/product/${productId}`);
+    window.history.pushState({}, '', createProductRoute(productId));
     forceUpdate({});
   };
 
-  const navigateToCard = (productId: string) => {
-    window.history.pushState({}, '', `/card/${productId}`);
-    forceUpdate({});
-  };
 
   // Parse current route
   const getCurrentRoute = () => {
     const path = window.location.pathname;
     const searchParams = new URLSearchParams(window.location.search);
     
-    if (path === '/' || path === '') {
+    if (path === ROUTES.HOME || path === '') {
       return { view: 'home' as const };
-    } else if (path === '/cd') {
+    } else if (path === ROUTES.CD) {
       // CD route - show gallery with CD format filter
       return { view: 'gallery' as const, filters: { format: 'cd' } };
-    } else if (path === '/vinyl') {
+    } else if (path === ROUTES.VINYL) {
       // Vinyl route - show gallery with vinyl format filter
       return { view: 'gallery' as const, filters: { format: 'vinyl' } };
-    } else if (path === '/about') {
+    } else if (path === ROUTES.ABOUT) {
       return { view: 'about' as const };
-    } else if (path === '/gallery') {
+    } else if (path === ROUTES.GALLERY) {
       const filters: Partial<FilterOptions> = {};
       searchParams.forEach((value, key) => {
         if (key in appState.galleryData.filters) {
@@ -247,12 +244,9 @@ const Router: React.FC<RouterProps> = ({
         }
       });
       return { view: 'gallery' as const, filters };
-    } else if (path.startsWith('/product/')) {
-      const productId = path.split('/')[2];
+    } else if (path.startsWith(`${ROUTES.PRODUCT}/`)) {
+      const productId = parseProductRoute(path);
       return { view: 'product' as const, productId };
-    } else if (path.startsWith('/card/')) {
-      const productId = path.split('/')[2];
-      return { view: 'card' as const, productId };
     }
     
     return { view: 'home' as const }; // fallback
@@ -348,19 +342,6 @@ const Router: React.FC<RouterProps> = ({
               });
               document.dispatchEvent(event);
             }}
-          />
-        );
-      
-      case 'card':
-        const cardRoute = getCurrentRoute();
-        if (!cardRoute.productId) {
-          navigateToHome();
-          return null;
-        }
-        return (
-          <ProductCard
-            product={appState.productData.currentProduct as PartialProduct}
-            onImageClick={(product: PartialProduct) => navigateToProduct(product.id)}
           />
         );
       
