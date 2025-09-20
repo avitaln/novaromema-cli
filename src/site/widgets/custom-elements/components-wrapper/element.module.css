@@ -1314,7 +1314,7 @@
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+  grid-template-columns: 1fr 200px 1fr;
   align-items: center;
   gap: 1rem;
   max-width: 1400px;
@@ -1329,14 +1329,6 @@
   justify-content: center;
 }
 
-/* Right-center - Menu Items */
-.navbarRightCenter {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  justify-content: center;
-}
-
 /* Center - Logo */
 .navbarLogo {
   display: flex;
@@ -1345,15 +1337,7 @@
   width: 100%;
 }
 
-/* Left-center - Search, Avatar, Cart */
-.navbarLeftCenter {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  justify-content: center;
-}
-
-/* Left side - Empty */
+/* Left side - Search, Avatar, Cart */
 .navbarLeftActions {
   display: flex;
   align-items: center;
@@ -1366,12 +1350,14 @@
   text-decoration: none;
   font-weight: 400;
   font-size: 1.1rem;
-  transition: color 0.3s ease;
+  transition: background-color 0.3s ease;
   white-space: nowrap;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
 }
 
 .navbarLink:hover {
-  color: #d1d5db;
+  background-color: #666666;
 }
 
 /* Search Button */
@@ -1390,7 +1376,7 @@
 }
 
 .searchButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #666666;
 }
 
 .searchIcon {
@@ -1407,6 +1393,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.userAvatar:hover {
+  background-color: #666666;
 }
 
 .avatarIcon {
@@ -1435,6 +1427,13 @@
   gap: 0.5rem;
   cursor: pointer;
   flex-direction: row-reverse;
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.cartContainer:hover {
+  background-color: #666666;
 }
 
 .cartIcon {
@@ -1626,19 +1625,11 @@
   
   
   .navbarContainer {
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 150px 1fr;
     gap: 0.5rem;
   }
   
   .navbarRightMenu {
-    gap: 0.75rem;
-  }
-  
-  .navbarRightCenter {
-    gap: 0.75rem;
-  }
-  
-  .navbarLeftCenter {
     gap: 0.75rem;
   }
   

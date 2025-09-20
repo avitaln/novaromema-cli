@@ -59,12 +59,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
   return (
     <nav className={styles.navbar} dir="rtl">
       <div className={styles.navbarContainer}>
-        {/* Right side - Empty */}
+        {/* Right side - Menu Items */}
         <div className={styles.navbarRightMenu}>
-        </div>
-
-        {/* Right-center - Menu Items */}
-        <div className={styles.navbarRightCenter}>
           <a 
             href="/" 
             className={styles.navbarLink}
@@ -110,17 +106,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
           </a>
         </div>
 
-        {/* Left-center - Search, Avatar, Cart */}
-        <div className={styles.navbarLeftCenter}>
+        {/* Left side - Search, Avatar, Cart */}
+        <div className={styles.navbarLeftActions}>
           {/* Search Button */}
           <button 
             onClick={handleSearchSubmit} 
             className={styles.searchButton}
           >
+            <span>חיפוש</span>
             <svg className={styles.searchIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span>חיפוש</span>
           </button>
 
           {/* User Avatar */}
@@ -132,10 +128,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
 
           {/* Cart */}
           <Cart itemCount={2} totalPrice={320} />
-        </div>
-
-        {/* Left side - Empty */}
-        <div className={styles.navbarLeftActions}>
         </div>
       </div>
     </nav>
