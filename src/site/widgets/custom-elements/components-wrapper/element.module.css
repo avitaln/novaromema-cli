@@ -372,7 +372,7 @@
   max-width: 100vw;
   margin: 0 auto;
   position: relative;
-  padding: 0;
+  padding-top: 100px; /* Account for navbar + filterbar - reduced for closer spacing */
   background-color: rgb(238, 238, 238);
   min-height: calc(100vh - 80px); /* Account for header */
   font-family: 'assistant-v2', sans-serif;
@@ -383,7 +383,8 @@
 /* Mobile: Account for header height since FilterBar pulls up to touch it */
 @media (max-width: 50rem) {
   .productGallery {
-    margin-top: 3rem; /* Account for fixed header height */
+    padding-top: 120px; /* Account for mobile navbar + filterbar - reduced for closer spacing */
+    margin-top: 0;
   }
 }
 
@@ -988,11 +989,11 @@
   direction: rtl;
   position: fixed;
   top: var(--navbar-total-height); /* Position right below navbar */
-  z-index: 40; /* Below navbar (50) but above content */
-  display: flex;
-  width: 100%;
   left: 0;
   right: 0;
+  width: 100%;
+  z-index: 40; /* Below navbar (50) but above content */
+  display: flex;
   margin: 0;
   padding: 0; /* Very minimal padding: ~2.4px top/bottom */
   justify-content: center;
@@ -1290,12 +1291,16 @@
 .mainContent {
   flex: 1;
   width: 100%;
+  padding-top: var(--navbar-total-height);
 }
 
 /* Navbar Styles */
 .navbar {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 50;
   background-color: #000000;
   color: #ffffff;
@@ -1594,9 +1599,18 @@
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  .mainContent {
+    padding-top: var(--navbar-total-height-mobile);
+  }
+  
   .navbar {
     padding: 0.5rem 0.5rem;
     min-height: var(--navbar-content-height-mobile);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
   }
   
   .filterBarContainer {
