@@ -17,7 +17,7 @@
   --success-color: #51cf66;
   --navbar-content-height: 80px; /* Navbar min-height */
   --navbar-content-height-mobile: 60px; /* Mobile navbar min-height */
-  --navbar-total-height: 85px; /* Full navbar height for positioning (content + border + padding) */
+  --navbar-total-height: 90px; /* Full navbar height for positioning (content + border + padding) */
   --navbar-total-height-mobile: 65px; /* Full mobile navbar height */
   --filterbar-height: 60px; /* Filterbar height for desktop */
   --filterbar-height-mobile: 60px; /* Filterbar height for mobile */
@@ -1342,6 +1342,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
 }
 
 /* Left-center - Search, Avatar, Cart */
@@ -1364,7 +1365,7 @@
   color: #ffffff;
   text-decoration: none;
   font-weight: 400;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   transition: color 0.3s ease;
   white-space: nowrap;
 }
@@ -1380,6 +1381,7 @@
   color: #ffffff;
   cursor: pointer;
   display: flex;
+  font-size: 1.1rem;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem;
@@ -1420,9 +1422,10 @@
 }
 
 .logoImage {
-  height: 60px;
+  height: 80px;
   width: auto;
   object-fit: contain;
+  display: block;
 }
 
 /* Cart */
@@ -1442,7 +1445,7 @@
 
 .cartText {
   color: #ffffff;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   white-space: nowrap;
 }
 
@@ -1644,11 +1647,11 @@
   }
   
   .logoImage {
-    height: 40px;
+    height: 60px;
   }
   
   .navbarLink {
-    font-size: 0.75rem;
+    font-size: 1rem;
   }
   
   .userAvatar {
@@ -1663,6 +1666,7 @@
   
   .searchButton {
     padding: 0.25rem;
+    font-size: 1rem;
   }
   
   .searchButton span {
