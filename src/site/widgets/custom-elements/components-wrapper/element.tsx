@@ -6,6 +6,9 @@ import { ProductGallery } from './ProductGallery';
 import { ProductCard } from './ProductCard';
 import { ProductPage } from './ProductPage';
 import { HomePage } from './HomePage';
+import { About } from './About';
+import { Navbar } from './Navbar';
+import { Footer } from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
 import styles from './element.module.css';
 
@@ -65,8 +68,8 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'card';
-    previousView?: 'home' | 'gallery';
+    currentView: 'home' | 'gallery' | 'product' | 'card' | 'about';
+    previousView?: 'home' | 'gallery' | 'about';
     productId?: string;
   };
 }
@@ -128,7 +131,7 @@ const SPECIAL_MAPPINGS: Record<string, string> = {
 // Constants
 const PRODUCTS_PER_PAGE = 25;
 
-function CustomElement({ displayName, height, component = 'gallery', productId, productData }: Props) {
+function CustomElement({ displayName, height, component, productId, productData }: Props) {
   // Initialize filters from URL parameters
   const initializeFiltersFromUrl = (): FilterOptions => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -146,6 +149,7 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
   // Initialize navigation state from URL
   const initializeNavigationFromUrl = (): SharedAppState['navigation'] => {
     const path = window.location.pathname;
+    console.log('🔄 Initializing navigation from URL:', path);
     
     // Check if we're on a product page
     if (path.startsWith('/product-page/')) {
@@ -155,19 +159,34 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
         console.log('🔍 Product slug from URL - raw:', rawProductSlug, 'decoded:', productSlug);
         return {
           currentView: 'product',
-          previousView: 'gallery', // Default to gallery as previous view
+          previousView: 'gallery', // Default to gallery view (will use /vinyl URL)
           productId: productSlug
         };
       }
     }
     
-    // Check if we're on home page
-    if (path === '/' || path === '') {
+    // Check for specific gallery routes (CD and Vinyl only)
+    if (path === '/cd' || path === '/vinyl') {
+      console.log('🖼️ Gallery route detected:', path);
+      return { currentView: 'gallery' };
+    }
+    
+    // Check for about page
+    if (path === '/about') {
+      console.log('ℹ️ About route detected:', path);
+      return { currentView: 'about' };
+    }
+    
+    // Check if we're on home page or no nested route (default to home)
+    if (path === '/' || path === '' || !path.includes('/')) {
+      console.log('🏠 Home route detected:', path);
       return { currentView: 'home' };
     }
     
-    // Default to gallery for other paths or use component prop
-    return { currentView: component as any || 'gallery' };
+    // Use component prop if explicitly specified, otherwise default to home
+    const finalView = component && component !== 'gallery' ? component as any : 'home';
+    console.log('🔧 Using component prop or defaulting to home:', component, '→', finalView);
+    return { currentView: finalView };
   };
 
   // Initialize shared app state
@@ -211,20 +230,6 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
       }
     }
   }, [productData]);
-
-  // Update navigation when component prop changes (for external control)
-  useEffect(() => {
-    if (component) {
-      setAppState(prev => ({
-        ...prev,
-        navigation: { 
-          ...prev.navigation, 
-          currentView: component as any,
-          productId: productId || prev.navigation.productId
-        }
-      }));
-    }
-  }, [component, productId]);
 
   // ===== DATA FETCHING FUNCTIONS =====
   
@@ -546,7 +551,7 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
     console.log('🔙 Navigating back to:', previousView);
     
     // Update browser URL when going back
-    const backUrl = previousView === 'home' ? '/' : '/gallery';
+    const backUrl = previousView === 'home' ? '/' : '/vinyl'; // Default to vinyl instead of gallery
     window.history.pushState({}, '', backUrl);
     
     setAppState(prev => ({
@@ -564,20 +569,89 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
   }, [appState.navigation.previousView, appState.homeData.scrollPosition, appState.galleryData.scrollPosition]);
 
   const navigateToGallery = useCallback(() => {
-    console.log('🖼️ Navigating to gallery');
-    setAppState(prev => ({
-      ...prev,
-      navigation: { currentView: 'gallery' }
-    }));
+    console.log('🖼️ Navigating to gallery (defaulting to vinyl)');
+    setAppState(prev => {
+      // Don't update state if already in gallery view
+      if (prev.navigation.currentView === 'gallery') {
+        console.log('🔄 Already in gallery view, skipping state update');
+        return prev;
+      }
+      // Default to vinyl route when navigating to gallery
+      window.history.pushState({}, '', '/vinyl');
+      return {
+        ...prev,
+        navigation: { currentView: 'gallery' },
+        galleryData: {
+          ...prev.galleryData,
+          products: [], // Clear products to force refresh
+          currentPage: 0,
+          total: null,
+          stopLoading: false,
+          hasMore: true,
+          scrollPosition: 0
+        }
+      };
+    });
   }, []);
 
   const navigateToHome = useCallback(() => {
     console.log('🏠 Navigating to home');
+    // Update URL to home
+    window.history.pushState({}, '', '/');
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'home' }
     }));
   }, []);
+
+  const navigateToAbout = useCallback(() => {
+    console.log('ℹ️ Navigating to about');
+    window.history.pushState({}, '', '/about');
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'about' }
+    }));
+  }, []);
+
+  const navigateToCd = useCallback(() => {
+    console.log('💿 Navigating to CD gallery');
+    window.history.pushState({}, '', '/cd');
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'gallery' },
+      galleryData: {
+        ...prev.galleryData,
+        products: [], // Clear products to force refresh with CD filter
+        currentPage: 0,
+        total: null,
+        stopLoading: false,
+        hasMore: true,
+        scrollPosition: 0
+      }
+    }));
+    // Trigger immediate data fetch for CD products
+    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+  }, [fetchGalleryData]);
+
+  const navigateToVinyl = useCallback(() => {
+    console.log('🎵 Navigating to Vinyl gallery');
+    window.history.pushState({}, '', '/vinyl');
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'gallery' },
+      galleryData: {
+        ...prev.galleryData,
+        products: [], // Clear products to force refresh with Vinyl filter
+        currentPage: 0,
+        total: null,
+        stopLoading: false,
+        hasMore: true,
+        scrollPosition: 0
+      }
+    }));
+    // Trigger immediate data fetch for Vinyl products
+    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+  }, [fetchGalleryData]);
 
   // ===== GALLERY SPECIFIC FUNCTIONS =====
   
@@ -669,11 +743,41 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
     const handlePopState = () => {
       console.log('🔄 Popstate event - URL changed:', window.location.pathname);
       const newNavigation = initializeNavigationFromUrl();
+      const currentPath = window.location.pathname;
       
-      setAppState(prev => ({
-        ...prev,
-        navigation: newNavigation
-      }));
+      setAppState(prev => {
+        // Don't update if the view type hasn't changed, unless we're in gallery view
+        // (because CD/Vinyl are both gallery view but need re-rendering for different modes)
+        if (prev.navigation.currentView === newNavigation.currentView && newNavigation.currentView !== 'gallery') {
+          console.log('🔄 Same view type, skipping navigation update');
+          return prev;
+        }
+        
+        // If navigating to gallery view (CD/Vinyl), clear products to force refresh
+        if (newNavigation.currentView === 'gallery' && (currentPath === '/cd' || currentPath === '/vinyl')) {
+          console.log('🔄 Gallery route change detected, clearing products for refresh');
+          // Trigger immediate data fetch after state update
+          setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+          return {
+            ...prev,
+            navigation: newNavigation,
+            galleryData: {
+              ...prev.galleryData,
+              products: [], // Clear products to force refresh
+              currentPage: 0,
+              total: null,
+              stopLoading: false,
+              hasMore: true,
+              scrollPosition: 0
+            }
+          };
+        }
+        
+        return {
+          ...prev,
+          navigation: newNavigation
+        };
+      });
     };
 
     // Listen for browser navigation events
@@ -682,7 +786,7 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [fetchGalleryData]);
 
   // ===== INITIALIZATION =====
   
@@ -706,6 +810,7 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
   
   const renderComponent = () => {
     const { currentView } = appState.navigation;
+    console.log('🎨 Rendering component with currentView:', currentView);
     
     switch (currentView) {
       case 'home':
@@ -716,6 +821,8 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
             error={appState.homeData.error}
             onProductClick={(product) => navigateToProduct(product, 'home')}
             onNavigateToGallery={navigateToGallery}
+            onNavigateToCd={navigateToCd}
+            onNavigateToVinyl={navigateToVinyl}
           />
         );
         
@@ -771,30 +878,19 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
         }
         return <div>No product data provided for ProductCard</div>;
         
+      case 'about':
+        return <About />;
+        
       default:
-        const defaultPath = window.location.pathname;
         return (
-          <ProductGallery 
-            products={appState.galleryData.products}
-            filters={appState.galleryData.filters}
-            mode={defaultPath === '/cd' ? 'cd' : defaultPath === '/vinyl' ? 'vinyl' : 'all'}
-            loading={appState.galleryData.loading}
-            error={appState.galleryData.error}
-            total={appState.galleryData.total}
-            hasMore={appState.galleryData.hasMore}
-            stopLoading={appState.galleryData.stopLoading}
-            currentPage={appState.galleryData.currentPage}
-            scrollPosition={appState.galleryData.scrollPosition}
-            onProductClick={(product) => navigateToProduct(product, 'gallery')}
-            onFiltersChange={handleGalleryFiltersChange}
-            onLoadMore={handleGalleryLoadMore}
-            onNextPage={handleGalleryNextPage}
-            onScrollPositionChange={(position) => {
-              setAppState(prev => ({
-                ...prev,
-                galleryData: { ...prev.galleryData, scrollPosition: position }
-              }));
-            }}
+          <HomePage 
+            sections={appState.homeData.sections}
+            loading={appState.homeData.loading}
+            error={appState.homeData.error}
+            onProductClick={(product) => navigateToProduct(product, 'home')}
+            onNavigateToGallery={navigateToGallery}
+            onNavigateToCd={navigateToCd}
+            onNavigateToVinyl={navigateToVinyl}
           />
         );
     }
@@ -804,7 +900,19 @@ function CustomElement({ displayName, height, component = 'gallery', productId, 
     <div 
       className={styles.root}
     >
+      <Navbar 
+        onNavigateToHome={navigateToHome}
+        onNavigateToGallery={navigateToGallery}
+        onNavigateToAbout={navigateToAbout}
+        onNavigateToCd={navigateToCd}
+        onNavigateToVinyl={navigateToVinyl}
+      />
       {renderComponent()}
+      <Footer 
+        onNavigateToHome={navigateToHome}
+        onNavigateToGallery={navigateToGallery}
+        onNavigateToAbout={navigateToAbout}
+      />
     </div>
   );
 }

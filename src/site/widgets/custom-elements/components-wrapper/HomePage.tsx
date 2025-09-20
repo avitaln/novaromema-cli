@@ -20,17 +20,29 @@ interface HomePageProps {
   error: string | null;
   onProductClick: (product: PartialProduct) => void;
   onNavigateToGallery?: () => void;
+  onNavigateToCd?: () => void;
+  onNavigateToVinyl?: () => void;
 }
 
-export function HomePage({ sections, loading, error, onProductClick, onNavigateToGallery }: HomePageProps) {
+export function HomePage({ sections, loading, error, onProductClick, onNavigateToGallery, onNavigateToCd, onNavigateToVinyl }: HomePageProps) {
   const handleCardClick = (product: PartialProduct) => {
     onProductClick(product);
   };
 
+  const handleCdClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onNavigateToCd?.();
+  };
+
+  const handleVinylClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onNavigateToVinyl?.();
+  };
+
   const buttonLinks = useMemo(() => {
     return [
-      { title: 'לכל הדיסקים', href: '/cd' },
-      { title: 'לכל התקליטים', href: '/vinyl' },
+      { title: 'לכל הדיסקים', href: '/cd', onClick: handleCdClick },
+      { title: 'לכל התקליטים', href: '/vinyl', onClick: handleVinylClick },
     ];
   }, []);
 
@@ -46,7 +58,7 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
             </p>
             <div className={styles.homeButtons}>
               {buttonLinks.map((btn) => (
-                <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button">
+                <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button" onClick={btn.onClick}>
                   {btn.title}
                 </a>
               ))}
@@ -75,7 +87,7 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
           </p>
           <div className={styles.homeButtons}>
             {buttonLinks.map((btn) => (
-              <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button">
+              <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button" onClick={btn.onClick}>
                 {btn.title}
               </a>
             ))}
