@@ -45,7 +45,6 @@
   background: #efefef;
   min-height: 100vh;
   padding: 40px 20px;
-  padding-top: calc(var(--navbar-total-height) + 40px);
 }
 
 .aboutContent {
@@ -171,7 +170,6 @@
 /* HomePage */
 .homeRoot {
   background: #efefef;
-  padding-top: var(--navbar-total-height);
 }
 
 .homeHero {
@@ -374,7 +372,8 @@
   max-width: 100vw;
   margin: 0 auto;
   position: relative;
-  padding-top: calc(var(--navbar-total-height) + var(--filterbar-height)); /* Account for navbar + filterbar using CSS variables */
+  padding: 32px;
+  padding-top: calc(32px + var(--filterbar-height)); /* 32px base padding + filterbar height */
   background-color: rgb(238, 238, 238);
   min-height: calc(100vh - 80px); /* Account for header */
   font-family: 'assistant-v2', sans-serif;
@@ -382,10 +381,11 @@
   overflow-x: hidden;
 }
 
-/* Mobile: Account for header height since FilterBar pulls up to touch it */
+/* Mobile: Same padding as desktop */
 @media (max-width: 50rem) {
   .productGallery {
-    padding-top: calc(var(--navbar-total-height-mobile) + var(--filterbar-height-mobile)); /* Account for mobile navbar + filterbar using CSS variables */
+    padding: 32px;
+    padding-top: calc(32px + var(--filterbar-height-mobile)); /* 32px base padding + mobile filterbar height */
     margin-top: 0;
   }
 }
@@ -412,15 +412,7 @@
   contain: layout style paint;
 }
 
-.productGridWithFilter {
-  padding-top: 5rem; /* Account for fixed header (3rem) + filter bar (~4rem) */
-}
 
-@media (max-width: 50rem) {
-  .productGridWithFilter {
-    padding-top: 0; /* No extra padding needed - FilterBar flows naturally above */
-  }
-}
 
 /* Responsive breakpoints */
 @media (max-width: 1200px) {
@@ -674,7 +666,6 @@
   color: black;
   font-size: 16px;
   font-family: 'assistant-v2', sans-serif;
-  padding-top: var(--navbar-total-height);
   /* Prevent layout shifts and improve performance */
   will-change: scroll-position;
   contain: layout style paint;
@@ -1673,16 +1664,5 @@
     gap: 1.5rem;
   }
   
-  .aboutContainer {
-    padding-top: calc(var(--navbar-total-height-mobile) + 40px);
-  }
-  
-  .homeRoot {
-    padding-top: var(--navbar-total-height-mobile);
-  }
-  
-  .productPageContainer {
-    padding-top: var(--navbar-total-height-mobile);
-  }
 }
 

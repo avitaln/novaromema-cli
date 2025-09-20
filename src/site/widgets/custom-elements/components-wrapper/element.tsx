@@ -907,7 +907,9 @@ function CustomElement({ displayName, height, component, productId, productData 
         onNavigateToCd={navigateToCd}
         onNavigateToVinyl={navigateToVinyl}
       />
-      {renderComponent()}
+      <main className={styles.mainContent}>
+        {renderComponent()}
+      </main>
       <Footer 
         onNavigateToHome={navigateToHome}
         onNavigateToGallery={navigateToGallery}

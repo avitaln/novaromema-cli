@@ -200,7 +200,7 @@ export function ProductGallery({
         onFilterChange={onFiltersChange}
       />
       
-      <div className={`${styles.productGrid} ${styles.productGridWithFilter}`}>
+      <div className={`${styles.productGrid}`}>
         {products.map((product) => (
           <ProductCard 
             key={product.id} 
