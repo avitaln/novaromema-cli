@@ -46,35 +46,54 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
     ];
   }, []);
 
-  if (loading) {
-    return (
-      <div className={styles.homeRoot} dir="rtl">
-        <section className={styles.homeHero}>
-          <div className={styles.homeHeroInner}>
-            <p className={styles.homeHeroText}>
-              נובה רוממה הינה חנות היד השניה הגדולה ברשת לתקליטים ודיסקים. באתר ניתן למצוא מבחר עצום, בדגש על יד שניה,
-              של דיסקים ותקליטים במחירים אטרקטיביים, מצחיקים ושווים לכל נפש שאין בשום חנות אחרת לצד פריטי אספנות נדירים
-              שמטבעם מתומחרים גבוה יותר.
-            </p>
-            <div className={styles.homeButtons}>
-              {buttonLinks.map((btn) => (
-                <a key={btn.title} className={styles.homeMoreButton} href={btn.href} role="button" onClick={btn.onClick}>
-                  {btn.title}
-                </a>
-              ))}
-            </div>
-          </div>
-        </section>
+  // Always render the same layout structure, but hide content when loading
+  const renderSections = () => {
+    if (loading) {
+      // Reserve space for 9 sections to prevent layout shift, but keep them invisible
+      return Array.from({ length: 9 }, (_, index) => (
+        <div key={`placeholder-${index}`} className={styles.homeSectionBlock}>
+          <div className={styles.homeSectionTitle} style={{ opacity: 0 }}>• טוען... •</div>
+          <div className={styles.homeSwiperContainer} style={{ minHeight: '320px', opacity: 0 }}></div>
+        </div>
+      ));
+    }
 
-        <section className={styles.homeSections}>
-          <div className={styles.loadingSpinner}>
-            <div className={styles.spinner} />
-            <div>טוען…</div>
+    if (error) {
+      return (
+        <div className={styles.error}>
+          <p>שגיאה בטעינת המוצרים: {error}</p>
+        </div>
+      );
+    }
+
+    return sections.map((section) => (
+      <div key={section.title} className={styles.homeSectionBlock}>
+        <div className={styles.homeSectionTitle}>• {section.title} •</div>
+        <div className={styles.homeSwiperContainer}>
+          <Swiper
+            modules={[Navigation]}
+            navigation
+            slidesPerView={'auto'}
+            spaceBetween={0}
+            dir="rtl"
+          >
+            {section.list.map((product) => (
+              <SwiperSlide key={product.id} className={styles.homeSlide}>
+                <ProductCard product={product} onImageClick={handleCardClick} />
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+        {section.buttonTitle && (
+          <div className={styles.homeMoreButtonWrap}>
+            <a className={styles.homeMoreButton} href="#" role="button">
+              {section.buttonTitle}
+            </a>
           </div>
-        </section>
+        )}
       </div>
-    );
-  }
+    ));
+  };
 
   return (
     <div className={styles.homeRoot} dir="rtl">
@@ -96,39 +115,7 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
       </section>
 
       <section className={styles.homeSections}>
-        {error ? (
-          <div className={styles.error}>
-            <p>שגיאה בטעינת המוצרים: {error}</p>
-          </div>
-        ) : (
-          sections.map((section) => (
-            <div key={section.title} className={styles.homeSectionBlock}>
-              <div className={styles.homeSectionTitle}>• {section.title} •</div>
-              <div className={styles.homeSwiperContainer}>
-                <Swiper
-                  modules={[Navigation]}
-                  navigation
-                  slidesPerView={'auto'}
-                  spaceBetween={0}
-                  dir="rtl"
-                >
-                  {section.list.map((product) => (
-                    <SwiperSlide key={product.id} className={styles.homeSlide}>
-                      <ProductCard product={product} onImageClick={handleCardClick} />
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </div>
-              {section.buttonTitle && (
-                <div className={styles.homeMoreButtonWrap}>
-                  <a className={styles.homeMoreButton} href="#" role="button">
-                    {section.buttonTitle}
-                  </a>
-                </div>
-              )}
-            </div>
-          ))
-        )}
+        {renderSections()}
       </section>
     </div>
   );
