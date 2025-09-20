@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { CatalogAPI, type PartialProduct } from './api';
 import { createProductRoute } from './routes';
+import { addToCart } from '../../../../backend/cart.web';
+import { useToast } from './useToast';
+import { ToastContainer } from './Toast';
 import styles from './element.module.css';
 
 interface ProductCardProps {
@@ -12,6 +15,8 @@ interface ProductCardProps {
 export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const { messages, removeToast, showSuccess, showError } = useToast();
   
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
@@ -48,10 +53,35 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
     }
   };
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (onAddToCart) {
-      onAddToCart(product);
+    
+    if (isAddingToCart) return; // Prevent double clicks
+    
+    setIsAddingToCart(true);
+    
+    try {
+      const result = await addToCart({
+        catalogItemId: product.id,
+        quantity: 1
+      });
+      
+      if (result.success) {
+        console.log('Item added to cart successfully:', result.cart);
+        showSuccess(`${product.artist} - ${product.title} נוסף לסל בהצלחה!`);
+        // Call the optional callback if provided
+        if (onAddToCart) {
+          onAddToCart(product);
+        }
+      } else {
+        console.error('Failed to add item to cart:', result.error);
+        showError(`שגיאה בהוספה לסל: ${result.message || 'שגיאה לא ידועה'}`);
+      }
+    } catch (error) {
+      console.error('Error adding item to cart:', error);
+      showError('שגיאה בהוספה לסל. אנא נסה שוב מאוחר יותר.');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -60,14 +90,16 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
       e.preventDefault();
       if (action === 'image') {
         handleImageClick();
-      } else if (action === 'cart') {
+      } else if (action === 'cart' && !isAddingToCart) {
         handleAddToCart(e as any);
       }
     }
   };
   
   return (
-    <div className={styles.productCard}>
+    <>
+      <ToastContainer messages={messages} onRemove={removeToast} />
+      <div className={styles.productCard}>
       <a 
         href={productUrl}
         className={styles.productImageContainer}
@@ -111,16 +143,18 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
         <div className={styles.pricePanel}>
           <a className={styles.priceText}>₪{product.price?.toFixed(2) ?? '0.00'}</a>
           <div 
-            className={`${styles.btn} ${styles.btnPrice}`}
+            className={`${styles.btn} ${styles.btnPrice} ${isAddingToCart ? styles.btnDisabled : ''}`}
             role="button"
-            tabIndex={0}
+            tabIndex={isAddingToCart ? -1 : 0}
             onClick={handleAddToCart}
             onKeyUp={(e) => handleKeyUp(e, 'cart')}
+            style={{ opacity: isAddingToCart ? 0.6 : 1, cursor: isAddingToCart ? 'not-allowed' : 'pointer' }}
           >
-            הוספה לסל
+            {isAddingToCart ? 'מוסיף לסל...' : 'הוספה לסל'}
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }
