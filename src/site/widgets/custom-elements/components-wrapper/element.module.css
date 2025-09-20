@@ -19,6 +19,8 @@
   --navbar-content-height-mobile: 60px; /* Mobile navbar min-height */
   --navbar-total-height: 85px; /* Full navbar height for positioning (content + border + padding) */
   --navbar-total-height-mobile: 65px; /* Full mobile navbar height */
+  --filterbar-height: 60px; /* Filterbar height for desktop */
+  --filterbar-height-mobile: 60px; /* Filterbar height for mobile */
 }
 
 .root {
@@ -43,6 +45,7 @@
   background: #efefef;
   min-height: 100vh;
   padding: 40px 20px;
+  padding-top: calc(var(--navbar-total-height) + 40px);
 }
 
 .aboutContent {
@@ -168,6 +171,7 @@
 /* HomePage */
 .homeRoot {
   background: #efefef;
+  padding-top: var(--navbar-total-height);
 }
 
 .homeHero {
@@ -274,7 +278,6 @@
   right: 0;
   z-index: 100;
   background-color: rgb(238, 238, 238);
-  border-bottom: 1px solid #ccc;
   padding: 1rem 0;
   margin: 0 0 1rem 0;
   width: 100vw;
@@ -298,7 +301,7 @@
 
 .searchInput {
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 4px;
   font-size: 14px;
   min-width: 200px;
@@ -308,7 +311,7 @@
 
 .filterSelect {
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: none;
   border-radius: 4px;
   font-size: 14px;
   background-color: white;
@@ -321,7 +324,6 @@
 .filterSelect:focus,
 .searchInput:focus {
   outline: none;
-  border-color: #4a9eff;
 }
 
 .resultsCount {
@@ -372,7 +374,7 @@
   max-width: 100vw;
   margin: 0 auto;
   position: relative;
-  padding-top: 100px; /* Account for navbar + filterbar - reduced for closer spacing */
+  padding-top: calc(var(--navbar-total-height) + var(--filterbar-height)); /* Account for navbar + filterbar using CSS variables */
   background-color: rgb(238, 238, 238);
   min-height: calc(100vh - 80px); /* Account for header */
   font-family: 'assistant-v2', sans-serif;
@@ -383,7 +385,7 @@
 /* Mobile: Account for header height since FilterBar pulls up to touch it */
 @media (max-width: 50rem) {
   .productGallery {
-    padding-top: 120px; /* Account for mobile navbar + filterbar - reduced for closer spacing */
+    padding-top: calc(var(--navbar-total-height-mobile) + var(--filterbar-height-mobile)); /* Account for mobile navbar + filterbar using CSS variables */
     margin-top: 0;
   }
 }
@@ -672,6 +674,7 @@
   color: black;
   font-size: 16px;
   font-family: 'assistant-v2', sans-serif;
+  padding-top: var(--navbar-total-height);
   /* Prevent layout shifts and improve performance */
   will-change: scroll-position;
   contain: layout style paint;
@@ -992,6 +995,7 @@
   left: 0;
   right: 0;
   width: 100%;
+  height: var(--filterbar-height); /* Use filterbar height variable */
   z-index: 40; /* Below navbar (50) but above content */
   display: flex;
   margin: 0;
@@ -1019,7 +1023,6 @@
     justify-content: center;
     flex-wrap: initial; /* Reset flex-wrap */
     width: 100%;
-    border-radius: 6px;
     overflow: visible; /* Allow content to determine size */
   }
   
@@ -1118,7 +1121,7 @@
   background-color: black;
   color: white;
   padding: 0.25rem 0.5rem 0.25rem 1.25rem; /* 4px 8px 4px 20px to rem */
-  border: 0.0625rem solid #ccc; /* 1px to rem */
+  border: none;
   border-radius: 0.25rem; /* 4px to rem */
   font-size: 1rem; /* 16px to rem */
   font-family: assistant-v2, Helvetica, sans-serif;
@@ -1164,7 +1167,6 @@
 
 .dropdownSelect:focus + .dropdownButton {
   outline: none;
-  border-color: rgb(207, 45, 32);
   box-shadow: 0 0 0 2px rgba(207, 45, 32, 0.2);
 }
 
@@ -1176,7 +1178,7 @@
 .searchInput {
   height: 2rem; /* 32px to rem */
   width: 12.5rem; /* 200px to rem */
-  border: 0.0625rem solid lightgray; /* 1px to rem */
+  border: none;
   border-radius: 0.25rem; /* 4px to rem */
   padding: 0 0.75rem; /* 12px to rem */
   outline: none;
@@ -1187,7 +1189,6 @@
 }
 
 .searchInput:focus {
-  border-color: rgb(207, 45, 32);
   box-shadow: 0 0 0 2px rgba(207, 45, 32, 0.2);
 }
 
@@ -1229,8 +1230,7 @@
     grid-template-rows: repeat(3, minmax(40px, 1fr)); /* 3 equal height rows with minimum */
     gap: 0; /* No gap between rows */
     width: 100%;
-    border-radius: 6px;
-    overflow: hidden; /* Ensure border-radius works */
+    overflow: hidden;
   }
   
   /* Mobile Row Styling */
@@ -1304,13 +1304,15 @@
   z-index: 50;
   background-color: #000000;
   color: #ffffff;
-  padding: 0.75rem 1rem;
-  min-height: var(--navbar-content-height);
+  padding: 2px 1rem;
+  height: var(--navbar-total-height);
   border-bottom: 1px solid #333;
+  box-sizing: border-box;
 }
 
 .navbarContainer {
   width: 100%;
+  height: 100%;
   display: grid;
   grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
   align-items: center;
@@ -1604,17 +1606,19 @@
   }
   
   .navbar {
-    padding: 0.5rem 0.5rem;
-    min-height: var(--navbar-content-height-mobile);
+    padding: 2px 0.5rem;
+    height: var(--navbar-total-height-mobile);
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     width: 100%;
+    box-sizing: border-box;
   }
   
   .filterBarContainer {
     top: var(--navbar-total-height-mobile); /* Position below mobile navbar */
+    height: var(--filterbar-height-mobile); /* Use mobile filterbar height variable */
   }
   
   
@@ -1672,6 +1676,18 @@
   .footerContent {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+  }
+  
+  .aboutContainer {
+    padding-top: calc(var(--navbar-total-height-mobile) + 40px);
+  }
+  
+  .homeRoot {
+    padding-top: var(--navbar-total-height-mobile);
+  }
+  
+  .productPageContainer {
+    padding-top: var(--navbar-total-height-mobile);
   }
 }
 
