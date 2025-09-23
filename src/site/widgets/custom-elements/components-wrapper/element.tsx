@@ -72,6 +72,7 @@ interface SharedAppState {
     currentView: 'home' | 'gallery' | 'product' | 'about';
     previousView?: 'home' | 'gallery' | 'about';
     productId?: string;
+    isRestoringScroll?: boolean;
   };
 }
 
@@ -214,7 +215,7 @@ function CustomElement({ displayName, height, component, productId, productData 
       loading: false, 
       error: null 
     },
-    navigation: initializeNavigationFromUrl()
+    navigation: { ...initializeNavigationFromUrl(), isRestoringScroll: false }
   });
 
   // For backward compatibility with component prop
@@ -557,15 +558,23 @@ function CustomElement({ displayName, height, component, productId, productData 
     
     setAppState(prev => ({
       ...prev,
-      navigation: { currentView: previousView }
+      navigation: { currentView: previousView, isRestoringScroll: true }
     }));
     
-    // Restore scroll position instantly
+    // Restore scroll position with smooth behavior
     requestAnimationFrame(() => {
       const scrollPos = previousView === 'home' 
         ? appState.homeData.scrollPosition 
         : appState.galleryData.scrollPosition;
       window.scrollTo(0, scrollPos);
+      
+      // Clear restoring state after scroll completes
+      setTimeout(() => {
+        setAppState(prev => ({
+          ...prev,
+          navigation: { ...prev.navigation, isRestoringScroll: false }
+        }));
+      }, 300); // Match transition duration
     });
   }, [appState.navigation.previousView, appState.homeData.scrollPosition, appState.galleryData.scrollPosition]);
 
@@ -841,6 +850,7 @@ function CustomElement({ displayName, height, component, productId, productData 
             stopLoading={appState.galleryData.stopLoading}
             currentPage={appState.galleryData.currentPage}
             scrollPosition={appState.galleryData.scrollPosition}
+            isRestoringScroll={appState.navigation.isRestoringScroll}
             onProductClick={(product) => navigateToProduct(product, 'gallery')}
             onFiltersChange={handleGalleryFiltersChange}
             onLoadMore={handleGalleryLoadMore}

@@ -381,6 +381,50 @@
   overflow-x: hidden;
 }
 
+/* Disable transitions during initial page load/refresh for performance */
+.productGallery.loading .productImage,
+.productGallery.loading .imagePopup {
+  transition: none !important;
+}
+
+/* Re-enable transitions after load for smooth UX */
+.productGallery.loaded .productImage {
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.productGallery.loaded .imagePopup {
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+/* Smooth scroll restoration when navigating back from product page */
+.productGallery.restoring-scroll {
+  scroll-behavior: smooth;
+}
+
+.productGallery.restoring-scroll .productImage {
+  transition: opacity 0.25s ease, transform 0.2s ease; /* Slightly longer for smooth restoration */
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .productImage,
+  .imagePopup,
+  .scrollRestorationOverlay {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .imageSkeleton,
+  .imageSkeletonPopup {
+    animation: none !important;
+    background: #e0e0e0; /* Static background instead of shimmer */
+  }
+  
+  .productGallery.restoring-scroll {
+    scroll-behavior: auto; /* Instant scroll for reduced motion */
+  }
+}
+
 /* Mobile: Same padding as desktop */
 @media (max-width: 50rem) {
   .productGallery {
@@ -473,8 +517,9 @@
   color: black;
   box-sizing: border-box;
   flex-shrink: 0;
-  /* Prevent layout shifts during image loading */
-  contain: layout style;
+  /* Aggressive containment and GPU layer optimization */
+  contain: layout style paint;
+  transform: translateZ(0); /* Force GPU layer without will-change */
 }
 
 @media (max-width: 800px) {
@@ -499,21 +544,28 @@
   width: 100%;
   aspect-ratio: 1;
   border-radius: 2px;
-  transition: opacity 0.3s ease, transform 0.2s ease;
-  will-change: opacity, transform;
+  /* Minimal transitions - only when necessary */
+  transition: opacity 0.15s ease, transform 0.1s ease;
   display: block;
 }
 
 .productImage.imageLoading {
   opacity: 0;
+  will-change: opacity; /* Only during loading */
 }
 
 .productImage.imageLoaded {
   opacity: 1;
+  will-change: auto; /* Remove will-change after loading */
 }
 
 .productImageContainer:hover .productImage.imageLoaded {
+  will-change: transform; /* Only during hover */
   transform: scale(1.05);
+}
+
+.productImageContainer:not(:hover) .productImage.imageLoaded {
+  will-change: auto; /* Remove will-change when not hovering */
 }
 
 .productImage.imageError {
@@ -529,8 +581,11 @@
   aspect-ratio: 1;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.2s infinite; /* Faster shimmer */
   border-radius: 2px;
+  /* Performance optimization for animation */
+  contain: layout style paint;
+  will-change: background-position; /* Only animate background-position */
 }
 
 @keyframes shimmer {
@@ -693,8 +748,9 @@
   justify-content: flex-end;
   align-items: flex-start;
   position: relative;
-  /* Prevent layout shifts during image loading */
-  contain: layout style;
+  /* Aggressive containment for product page images */
+  contain: layout style paint;
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 @media (max-width: 800px) {
@@ -712,20 +768,27 @@
   object-fit: contain;
   border-radius: 2px;
   box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.4);
-  transition: opacity 0.4s ease, transform 0.3s ease;
-  will-change: opacity, transform;
+  /* Smooth transitions for product page navigation - slightly longer for UX */
+  transition: opacity 0.2s ease, transform 0.15s ease;
 }
 
 .imagePopup.imageLoading {
   opacity: 0;
+  will-change: opacity; /* Only during loading */
 }
 
 .imagePopup.imageLoaded {
   opacity: 1;
+  will-change: auto; /* Remove will-change after loading */
 }
 
 .imagePopup.imageLoaded:hover {
+  will-change: transform; /* Only during hover */
   transform: scale(1.02);
+}
+
+.imagePopup.imageLoaded:not(:hover) {
+  will-change: auto; /* Remove will-change when not hovering */
 }
 
 .imagePopup.imageError {
@@ -739,9 +802,12 @@
   aspect-ratio: 1;
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.2s infinite; /* Faster shimmer */
   border-radius: 2px;
   box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.4);
+  /* Performance optimization for animation */
+  contain: layout style paint;
+  will-change: background-position; /* Only animate background-position */
 }
 
 /* Popup image error placeholder */
@@ -843,8 +909,12 @@
   justify-content: center;
   color: #333;
   font-weight: 700;
-  animation: fadeInScale 0.2s ease-out;
+  /* Faster animation for minimal delay */
+  animation: fadeInScale 0.15s ease-out;
   gap: 1rem;
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: transform, opacity; /* Only during animation */
 }
 
 @keyframes fadeInScale {

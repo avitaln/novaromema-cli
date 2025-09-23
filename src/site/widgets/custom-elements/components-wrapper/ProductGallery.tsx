@@ -25,6 +25,7 @@ interface ProductGalleryProps {
   stopLoading: boolean;
   currentPage: number;
   scrollPosition: number;
+  isRestoringScroll?: boolean;
   onProductClick: (product: PartialProduct) => void;
   onFiltersChange: (filters: FilterOptions) => void;
   onLoadMore: () => void;
@@ -43,6 +44,7 @@ export function ProductGallery({
   stopLoading,
   currentPage,
   scrollPosition,
+  isRestoringScroll = false,
   onProductClick,
   onFiltersChange,
   onLoadMore,
@@ -177,7 +179,7 @@ export function ProductGallery({
 
   if (error && products.length === 0) {
     return (
-      <div className={styles.productGallery}>
+      <div className={`${styles.productGallery} loaded`}>
         <FilterBar 
           mode={mode}
           total={total}
@@ -191,8 +193,18 @@ export function ProductGallery({
     );
   }
 
+  // Determine gallery state classes for performance optimization
+  const isInitialLoad = products.length === 0 && loading;
+  const isLoaded = products.length > 0 && !loading;
+  const galleryClasses = [
+    styles.productGallery,
+    isInitialLoad ? 'loading' : '',
+    isLoaded ? 'loaded' : '',
+    isRestoringScroll ? 'restoring-scroll' : ''
+  ].filter(Boolean).join(' ');
+
   return (
-    <div ref={galleryRef} className={styles.productGallery}>
+    <div ref={galleryRef} className={galleryClasses}>
       <FilterBar 
         mode={mode}
         total={total}
