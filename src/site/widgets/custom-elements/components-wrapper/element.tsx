@@ -583,6 +583,10 @@ function CustomElement({ displayName, height, component, productId, productData 
 
   const navigateToGallery = useCallback(() => {
     console.log('🖼️ Navigating to gallery (defaulting to vinyl)');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
     setAppState(prev => {
       // Don't update state if already in gallery view
       if (prev.navigation.currentView === 'gallery') {
@@ -611,15 +615,30 @@ function CustomElement({ displayName, height, component, productId, productData 
     console.log('🏠 Navigating to home');
     // Update URL to home
     window.history.pushState({}, '', '/');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
     setAppState(prev => ({
       ...prev,
-      navigation: { currentView: 'home' }
+      navigation: { currentView: 'home' },
+      // Clear home data to force fresh render
+      homeData: {
+        sections: [],
+        loading: false,
+        error: null,
+        scrollPosition: 0
+      }
     }));
   }, []);
 
   const navigateToAbout = useCallback(() => {
     console.log('ℹ️ Navigating to about');
     window.history.pushState({}, '', '/about');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'about' }
@@ -629,6 +648,10 @@ function CustomElement({ displayName, height, component, productId, productData 
   const navigateToCd = useCallback(() => {
     console.log('💿 Navigating to CD gallery');
     window.history.pushState({}, '', '/cd');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'gallery' },
@@ -649,6 +672,10 @@ function CustomElement({ displayName, height, component, productId, productData 
   const navigateToVinyl = useCallback(() => {
     console.log('🎵 Navigating to Vinyl gallery');
     window.history.pushState({}, '', '/vinyl');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'gallery' },
@@ -671,6 +698,9 @@ function CustomElement({ displayName, height, component, productId, productData 
     // Parse the slug to extract path and query parameters
     // Expected format: /all?special=newinsite, /vinyl?format=lp&condition=used, etc.
     window.history.pushState({}, '', slug);
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
     
     // Parse URL parameters from the slug
     const url = new URL(slug, window.location.origin);
@@ -799,6 +829,13 @@ function CustomElement({ displayName, height, component, productId, productData 
       const newNavigation = initializeNavigationFromUrl();
       const currentPath = window.location.pathname;
       
+      // Reset scroll to top for all navigation except when going back from product page
+      // (the navigateBack function handles scroll restoration for product->back navigation)
+      const isProductNavigation = appState.navigation.currentView === 'product';
+      if (!isProductNavigation) {
+        window.scrollTo(0, 0);
+      }
+      
       setAppState(prev => {
         // Don't update if the view type hasn't changed, unless we're in gallery view
         // (because CD/Vinyl are both gallery view but need re-rendering for different modes)
@@ -827,6 +864,37 @@ function CustomElement({ displayName, height, component, productId, productData 
           };
         }
         
+        // Clear data for other page navigations (except product->back which is handled by navigateBack)
+        if (newNavigation.currentView === 'home' && !isProductNavigation) {
+          return {
+            ...prev,
+            navigation: newNavigation,
+            homeData: {
+              sections: [],
+              loading: false,
+              error: null,
+              scrollPosition: 0
+            }
+          };
+        }
+        
+        // Clear gallery data when navigating to gallery from other pages (not product->back)
+        if (newNavigation.currentView === 'gallery' && !isProductNavigation && prev.navigation.currentView !== 'gallery') {
+          return {
+            ...prev,
+            navigation: newNavigation,
+            galleryData: {
+              ...prev.galleryData,
+              products: [], // Clear products to force refresh
+              currentPage: 0,
+              total: null,
+              stopLoading: false,
+              hasMore: true,
+              scrollPosition: 0
+            }
+          };
+        }
+        
         return {
           ...prev,
           navigation: newNavigation
@@ -840,7 +908,7 @@ function CustomElement({ displayName, height, component, productId, productData 
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [fetchGalleryData]);
+  }, [fetchGalleryData, appState.navigation.currentView]);
 
   // ===== INITIALIZATION =====
   
