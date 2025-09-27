@@ -7,6 +7,8 @@ import { ProductCard } from './ProductCard';
 import { ProductPage } from './ProductPage';
 import { HomePage } from './HomePage';
 import { About } from './About';
+import { CartPage } from './CartPage';
+import { CartProvider } from './CartContext';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
@@ -70,7 +72,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'about';
+    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart';
     previousView?: 'home' | 'gallery' | 'about';
     productId?: string;
     isRestoringScroll?: boolean;
@@ -179,6 +181,12 @@ function CustomElement({ displayName, height, component, productId, productData 
     if (path === ROUTES.ABOUT) {
       console.log('ℹ️ About route detected:', path);
       return { currentView: 'about' };
+    }
+    
+    // Check for cart page
+    if (path === ROUTES.CART) {
+      console.log('🛒 Cart route detected:', path);
+      return { currentView: 'cart' };
     }
     
     // Check if we're on home page or no nested route (default to home)
@@ -663,6 +671,19 @@ function CustomElement({ displayName, height, component, productId, productData 
     }));
   }, []);
 
+  const navigateToCart = useCallback(() => {
+    console.log('ℹ️ Navigating to cart');
+    window.history.pushState({}, '', '/cart');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'cart' }
+    }));
+  }, []);
+
   const navigateToCd = useCallback(() => {
     console.log('💿 Navigating to CD gallery');
     window.history.pushState({}, '', '/cd');
@@ -1018,6 +1039,20 @@ function CustomElement({ displayName, height, component, productId, productData 
       case 'about':
         return <About />;
         
+      case 'cart':
+        return (
+          <CartPage 
+            onClose={() => {
+              const previousView = appState.navigation.previousView;
+              if (previousView === 'gallery') {
+                navigateToGallery();
+              } else {
+                navigateToHome();
+              }
+            }}
+          />
+        );
+        
       default:
         return (
           <HomePage 
@@ -1035,25 +1070,28 @@ function CustomElement({ displayName, height, component, productId, productData 
   };
   
   return (
-    <div 
-      className={styles.root}
-    >
-      <Navbar 
-        onNavigateToHome={navigateToHome}
-        onNavigateToGallery={navigateToGallery}
-        onNavigateToAbout={navigateToAbout}
-        onNavigateToCd={navigateToCd}
-        onNavigateToVinyl={navigateToVinyl}
-      />
-      <main className={styles.mainContent}>
-        {renderComponent()}
-      </main>
-      <Footer 
-        onNavigateToHome={navigateToHome}
-        onNavigateToGallery={navigateToGallery}
-        onNavigateToAbout={navigateToAbout}
-      />
-    </div>
+    <CartProvider>
+      <div 
+        className={styles.root}
+      >
+        <Navbar 
+          onNavigateToHome={navigateToHome}
+          onNavigateToGallery={navigateToGallery}
+          onNavigateToAbout={navigateToAbout}
+          onNavigateToCd={navigateToCd}
+          onNavigateToVinyl={navigateToVinyl}
+          onNavigateToCart={navigateToCart}
+        />
+        <main className={styles.mainContent}>
+          {renderComponent()}
+        </main>
+        <Footer 
+          onNavigateToHome={navigateToHome}
+          onNavigateToGallery={navigateToGallery}
+          onNavigateToAbout={navigateToAbout}
+        />
+      </div>
+    </CartProvider>
   );
 }
 

@@ -9,9 +9,10 @@ interface NavbarProps {
   onNavigateToAbout: () => void;
   onNavigateToCd: () => void;
   onNavigateToVinyl: () => void;
+  onNavigateToCart: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGallery, onNavigateToAbout, onNavigateToCd, onNavigateToVinyl }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGallery, onNavigateToAbout, onNavigateToCd, onNavigateToVinyl, onNavigateToCart }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -133,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
           </div>
 
           {/* Cart */}
-          <Cart itemCount={2} totalPrice={320} />
+          <Cart onClick={onNavigateToCart} />
         </div>
       </div>
     </nav>

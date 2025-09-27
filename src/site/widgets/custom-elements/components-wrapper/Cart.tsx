@@ -1,16 +1,24 @@
 import React from 'react';
+import { useCart } from './CartContext';
 import styles from './element.module.css';
 
 interface CartProps {
-  itemCount?: number;
-  totalPrice?: number;
+  onClick?: () => void;
 }
 
-export const Cart: React.FC<CartProps> = ({ itemCount = 0, totalPrice = 0 }) => {
+export const Cart: React.FC<CartProps> = ({ onClick }) => {
+  const { itemCount, formattedTotal, loading } = useCart();
   const hasItems = itemCount > 0;
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
-    <div className={styles.cartContainer}>
+    <div className={styles.cartContainer} onClick={handleClick}>
       <div className={styles.cartIconWrapper}>
         <svg 
           className={styles.cartIcon} 
@@ -28,8 +36,10 @@ export const Cart: React.FC<CartProps> = ({ itemCount = 0, totalPrice = 0 }) => 
         )}
       </div>
       
-      {hasItems ? (
-        <div className={styles.cartTotal}>סה״כ: ₪{totalPrice}</div>
+      {loading ? (
+        <span className={styles.cartText}>טוען...</span>
+      ) : hasItems ? (
+        <div className={styles.cartTotal}>סה״כ: {formattedTotal}</div>
       ) : (
         <span className={styles.cartText}>הסל ריק</span>
       )}

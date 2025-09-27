@@ -4,6 +4,7 @@ import { ProductGallery } from './ProductGallery';
 import { ProductPage } from './ProductPage';
 import { ProductCard } from './ProductCard';
 import { About } from './About';
+import { CartPage } from './CartPage';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
@@ -61,7 +62,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'about';
+    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart';
     previousView?: 'home' | 'gallery';
     productId?: string;
   };
@@ -235,6 +236,11 @@ const Router: React.FC<RouterProps> = ({
     forceUpdate({});
   };
 
+  const navigateToCart = () => {
+    window.history.pushState({}, '', ROUTES.CART);
+    forceUpdate({});
+  };
+
   const navigateToCd = () => {
     window.history.pushState({}, '', ROUTES.CD);
     forceUpdate({});
@@ -282,6 +288,8 @@ const Router: React.FC<RouterProps> = ({
       return { view: 'gallery' as const, filters, mode: 'all' as const };
     } else if (path === ROUTES.ABOUT) {
       return { view: 'about' as const };
+    } else if (path === ROUTES.CART) {
+      return { view: 'cart' as const };
     } else if (path === ROUTES.GALLERY) {
       const filters: Partial<FilterOptions> = {};
       searchParams.forEach((value, key) => {
@@ -438,6 +446,20 @@ const Router: React.FC<RouterProps> = ({
       case 'about':
         return <About />;
       
+      case 'cart':
+        return (
+          <CartPage 
+            onClose={() => {
+              const previousView = appState.navigation.previousView;
+              if (previousView === 'gallery') {
+                navigateToGallery();
+              } else {
+                navigateToHome();
+              }
+            }}
+          />
+        );
+      
       default:
         return (
           <HomePage
@@ -460,6 +482,7 @@ const Router: React.FC<RouterProps> = ({
         onNavigateToAbout={navigateToAbout}
         onNavigateToCd={navigateToCd}
         onNavigateToVinyl={navigateToVinyl}
+        onNavigateToCart={navigateToCart}
       />
       <main className={styles.mainContent}>
         {renderCurrentPage()}
