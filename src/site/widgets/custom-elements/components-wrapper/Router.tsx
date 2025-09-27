@@ -10,6 +10,9 @@ import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter }
 import { ROUTES, createProductRoute, parseProductRoute } from './routes';
 import styles from './element.module.css';
 
+// Valid filter keys for URL parameter parsing
+const VALID_FILTER_KEYS = ['genre', 'special', 'condition', 'format', 'sort', 'search', 'searchType'];
+
 interface FilterOptions {
   genre: string;
   special: string;
@@ -220,6 +223,28 @@ const Router: React.FC<RouterProps> = ({
     forceUpdate({});
   };
 
+  const navigateToSlug = (slug: string) => {
+    // Parse the slug to extract path and query parameters
+    // Expected format: /all?special=newinsite, /vinyl?format=lp&condition=used, etc.
+    window.history.pushState({}, '', slug);
+    forceUpdate({});
+  };
+
+  const navigateToAbout = () => {
+    window.history.pushState({}, '', ROUTES.ABOUT);
+    forceUpdate({});
+  };
+
+  const navigateToCd = () => {
+    window.history.pushState({}, '', ROUTES.CD);
+    forceUpdate({});
+  };
+
+  const navigateToVinyl = () => {
+    window.history.pushState({}, '', ROUTES.VINYL);
+    forceUpdate({});
+  };
+
 
   // Parse current route
   const getCurrentRoute = () => {
@@ -229,17 +254,38 @@ const Router: React.FC<RouterProps> = ({
     if (path === ROUTES.HOME || path === '') {
       return { view: 'home' as const };
     } else if (path === ROUTES.CD) {
-      // CD route - show gallery with CD format filter
-      return { view: 'gallery' as const, filters: { format: 'cd' } };
+      // CD route - show gallery with CD format filter, parse query params for other filters
+      const filters: Partial<FilterOptions> = { format: 'cd' };
+      searchParams.forEach((value, key) => {
+        if (VALID_FILTER_KEYS.includes(key) && key !== 'format') { // Don't override format for CD route
+          filters[key as keyof FilterOptions] = value;
+        }
+      });
+      return { view: 'gallery' as const, filters };
     } else if (path === ROUTES.VINYL) {
-      // Vinyl route - show gallery with vinyl format filter
-      return { view: 'gallery' as const, filters: { format: 'vinyl' } };
+      // Vinyl route - show gallery with vinyl format filter, parse query params for other filters
+      const filters: Partial<FilterOptions> = { format: 'vinyl' };
+      searchParams.forEach((value, key) => {
+        if (VALID_FILTER_KEYS.includes(key) && key !== 'format') { // Don't override format for Vinyl route
+          filters[key as keyof FilterOptions] = value;
+        }
+      });
+      return { view: 'gallery' as const, filters };
+    } else if (path === ROUTES.ALL) {
+      // All route - show gallery with all formats, parse query params for filters
+      const filters: Partial<FilterOptions> = {};
+      searchParams.forEach((value, key) => {
+        if (VALID_FILTER_KEYS.includes(key)) {
+          filters[key as keyof FilterOptions] = value;
+        }
+      });
+      return { view: 'gallery' as const, filters, mode: 'all' as const };
     } else if (path === ROUTES.ABOUT) {
       return { view: 'about' as const };
     } else if (path === ROUTES.GALLERY) {
       const filters: Partial<FilterOptions> = {};
       searchParams.forEach((value, key) => {
-        if (key in appState.galleryData.filters) {
+        if (VALID_FILTER_KEYS.includes(key)) {
           filters[key as keyof FilterOptions] = value;
         }
       });
@@ -265,6 +311,7 @@ const Router: React.FC<RouterProps> = ({
             error={appState.homeData.error}
             onProductClick={(product: PartialProduct) => navigateToProduct(product.id)}
             onNavigateToGallery={() => navigateToGallery()}
+            onNavigateToSlug={navigateToSlug}
           />
         );
       
@@ -273,19 +320,62 @@ const Router: React.FC<RouterProps> = ({
         let mode: 'all' | 'cd' | 'vinyl' = 'all';
         let effectiveFilters = appState.galleryData.filters;
         
-        if (currentRoute.filters?.format === 'cd') {
+        // Check if this is the /all route with explicit mode
+        if (currentRoute.mode === 'all') {
+          mode = 'all';
+          // Create complete filter object with defaults, then merge route filters
+          const defaultFilters: FilterOptions = {
+            genre: 'all',
+            special: 'all',
+            condition: 'all',
+            format: 'all',
+            sort: 'new',
+            search: '',
+            searchType: 'name'
+          };
+          effectiveFilters = { ...defaultFilters, ...appState.galleryData.filters, ...currentRoute.filters };
+        } else if (currentRoute.filters?.format === 'cd') {
           mode = 'cd';
-          effectiveFilters = { ...appState.galleryData.filters, format: 'cd' };
+          const defaultFilters: FilterOptions = {
+            genre: 'all',
+            special: 'all',
+            condition: 'all',
+            format: 'all',
+            sort: 'new',
+            search: '',
+            searchType: 'name'
+          };
+          effectiveFilters = { ...defaultFilters, ...appState.galleryData.filters, format: 'cd' };
         } else if (currentRoute.filters?.format === 'vinyl') {
           mode = 'vinyl';
-          effectiveFilters = { ...appState.galleryData.filters, format: 'vinyl' };
+          const defaultFilters: FilterOptions = {
+            genre: 'all',
+            special: 'all',
+            condition: 'all',
+            format: 'all',
+            sort: 'new',
+            search: '',
+            searchType: 'name'
+          };
+          effectiveFilters = { ...defaultFilters, ...appState.galleryData.filters, format: 'vinyl' };
         } else {
           // Fallback to query params for /gallery route
           const searchParams = new URLSearchParams(window.location.search);
           const format = searchParams.get('format');
           mode = format === 'cd' ? 'cd' : format === 'vinyl' ? 'vinyl' : 'all';
+          const defaultFilters: FilterOptions = {
+            genre: 'all',
+            special: 'all',
+            condition: 'all',
+            format: 'all',
+            sort: 'new',
+            search: '',
+            searchType: 'name'
+          };
           if (format) {
-            effectiveFilters = { ...appState.galleryData.filters, format };
+            effectiveFilters = { ...defaultFilters, ...appState.galleryData.filters, format };
+          } else {
+            effectiveFilters = { ...defaultFilters, ...appState.galleryData.filters, ...currentRoute.filters };
           }
         }
         
@@ -356,6 +446,7 @@ const Router: React.FC<RouterProps> = ({
             error={appState.homeData.error}
             onProductClick={(product: PartialProduct) => navigateToProduct(product.id)}
             onNavigateToGallery={() => navigateToGallery()}
+            onNavigateToSlug={navigateToSlug}
           />
         );
     }
@@ -363,11 +454,21 @@ const Router: React.FC<RouterProps> = ({
 
   return (
     <div className={styles.appContainer}>
-      <Navbar onNavigateToHome={navigateToHome} onNavigateToGallery={navigateToGallery} />
+      <Navbar 
+        onNavigateToHome={navigateToHome} 
+        onNavigateToGallery={navigateToGallery}
+        onNavigateToAbout={navigateToAbout}
+        onNavigateToCd={navigateToCd}
+        onNavigateToVinyl={navigateToVinyl}
+      />
       <main className={styles.mainContent}>
         {renderCurrentPage()}
       </main>
-      <Footer onNavigateToHome={navigateToHome} onNavigateToGallery={navigateToGallery} />
+      <Footer 
+        onNavigateToHome={navigateToHome} 
+        onNavigateToGallery={navigateToGallery}
+        onNavigateToAbout={navigateToAbout}
+      />
     </div>
   );
 };

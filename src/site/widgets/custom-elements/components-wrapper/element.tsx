@@ -35,6 +35,7 @@ interface HomeSection {
   title: string;
   list: PartialProduct[];
   buttonTitle?: string;
+  slug?: string;
 }
 
 // Centralized app state
@@ -126,12 +127,13 @@ const SPECIAL_MAPPINGS: Record<string, string> = {
   'recommended': 'recommended',
   'classics': 'classics',
   'rare': 'rare',
-  'floor': 'floor'
+  'cheap': 'cheap'
 };
 
 
 // Constants
 const PRODUCTS_PER_PAGE = 25;
+const VALID_FILTER_KEYS = ['genre', 'special', 'condition', 'format', 'sort', 'search', 'searchType'];
 
 function CustomElement({ displayName, height, component, productId, productData }: Props) {
   // Initialize filters from URL parameters
@@ -167,8 +169,8 @@ function CustomElement({ displayName, height, component, productId, productData 
       }
     }
     
-    // Check for specific gallery routes (CD and Vinyl only)
-    if (path === ROUTES.CD || path === ROUTES.VINYL) {
+    // Check for specific gallery routes (CD, Vinyl, and All)
+    if (path === ROUTES.CD || path === ROUTES.VINYL || path === ROUTES.ALL) {
       console.log('🖼️ Gallery route detected:', path);
       return { currentView: 'gallery' };
     }
@@ -664,6 +666,47 @@ function CustomElement({ displayName, height, component, productId, productData 
     setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
   }, [fetchGalleryData]);
 
+  const navigateToSlug = useCallback((slug: string) => {
+    console.log('🔗 Navigating to slug:', slug);
+    // Parse the slug to extract path and query parameters
+    // Expected format: /all?special=newinsite, /vinyl?format=lp&condition=used, etc.
+    window.history.pushState({}, '', slug);
+    
+    // Parse URL parameters from the slug
+    const url = new URL(slug, window.location.origin);
+    const searchParams = url.searchParams;
+    
+    // Create new filters from URL parameters
+    const newFilters: FilterOptions = {
+      genre: searchParams.get('genre') || 'all',
+      special: searchParams.get('special') || 'all',
+      condition: searchParams.get('condition') || 'all',
+      format: searchParams.get('format') || 'all',
+      sort: searchParams.get('sort') || 'new',
+      search: searchParams.get('search') || '',
+      searchType: searchParams.get('searchType') || 'name'
+    };
+    
+    console.log('🔗 Parsed filters from slug:', newFilters);
+    
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'gallery' },
+      galleryData: {
+        ...prev.galleryData,
+        filters: newFilters, // Update filters to match URL
+        products: [], // Clear products to force refresh with new filters
+        currentPage: 0,
+        total: null,
+        stopLoading: false,
+        hasMore: true,
+        scrollPosition: 0
+      }
+    }));
+    // Trigger immediate data fetch with new filters
+    setTimeout(() => fetchGalleryData(true, undefined, newFilters, undefined), 0);
+  }, [fetchGalleryData]);
+
   // ===== GALLERY SPECIFIC FUNCTIONS =====
   
   const handleGalleryLoadMore = useCallback(() => {
@@ -834,6 +877,7 @@ function CustomElement({ displayName, height, component, productId, productData 
             onNavigateToGallery={navigateToGallery}
             onNavigateToCd={navigateToCd}
             onNavigateToVinyl={navigateToVinyl}
+            onNavigateToSlug={navigateToSlug}
           />
         );
         
@@ -898,6 +942,7 @@ function CustomElement({ displayName, height, component, productId, productData 
             onNavigateToGallery={navigateToGallery}
             onNavigateToCd={navigateToCd}
             onNavigateToVinyl={navigateToVinyl}
+            onNavigateToSlug={navigateToSlug}
           />
         );
     }

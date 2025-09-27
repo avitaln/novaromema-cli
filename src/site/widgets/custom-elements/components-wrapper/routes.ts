@@ -5,7 +5,8 @@ export const ROUTES = {
   PRODUCT: '/product',
   ABOUT: '/about',
   CD: '/cd',
-  VINYL: '/vinyl'
+  VINYL: '/vinyl',
+  ALL: '/all'
 } as const;
 
 // Helper functions for route generation

@@ -12,6 +12,7 @@ interface HomeSection {
   title: string;
   list: PartialProduct[];
   buttonTitle?: string;
+  slug?: string;
 }
 
 interface HomePageProps {
@@ -22,9 +23,10 @@ interface HomePageProps {
   onNavigateToGallery?: () => void;
   onNavigateToCd?: () => void;
   onNavigateToVinyl?: () => void;
+  onNavigateToSlug?: (slug: string) => void;
 }
 
-export function HomePage({ sections, loading, error, onProductClick, onNavigateToGallery, onNavigateToCd, onNavigateToVinyl }: HomePageProps) {
+export function HomePage({ sections, loading, error, onProductClick, onNavigateToGallery, onNavigateToCd, onNavigateToVinyl, onNavigateToSlug }: HomePageProps) {
   const handleCardClick = (product: PartialProduct) => {
     onProductClick(product);
   };
@@ -86,7 +88,17 @@ export function HomePage({ sections, loading, error, onProductClick, onNavigateT
         </div>
         {section.buttonTitle && (
           <div className={styles.homeMoreButtonWrap}>
-            <a className={styles.homeMoreButton} href="#" role="button">
+            <a 
+              className={styles.homeMoreButton} 
+              href={section.slug || "#"} 
+              role="button"
+              onClick={(e) => {
+                e.preventDefault();
+                if (section.slug && onNavigateToSlug) {
+                  onNavigateToSlug(section.slug);
+                }
+              }}
+            >
               {section.buttonTitle}
             </a>
           </div>

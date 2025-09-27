@@ -188,7 +188,7 @@ export class CatalogAPI {
     }
   }
 
-  static async fetchHome(): Promise<Array<{ title: string; list: PartialProduct[]; buttonTitle?: string }>> {
+  static async fetchHome(): Promise<Array<{ title: string; list: PartialProduct[]; buttonTitle?: string; slug?: string }>> {
     const url = new URL(`${BASE_URL}/home`);
     try {
       const response = await fetch(url.toString());
@@ -196,10 +196,11 @@ export class CatalogAPI {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      // Expecting an array of sections: { title, list: [...], buttonTitle }
+      // Expecting an array of sections: { title, list: [...], buttonTitle, slug }
       return (data || []).map((section: any) => ({
         title: section.title,
         buttonTitle: section.buttonTitle,
+        slug: section.slug, // Add slug for navigation
         list: (section.list || []).map((p: any) => ({
           id: String(p.id),
           artist: p.artist,

@@ -60,7 +60,7 @@ const specialTags = [
   { "value": "preorder", "label": "הזמנות מוקדמות" },
   { "value": "recommended", "label": "המלצות" },
   { "value": "classics", "label": "קלאסיקות" },
-  { "value": "floor", "label": "מחירי רצפה" }, 
+  { "value": "cheap", "label": "מחירי רצפה" }, 
   { "value": "rare", "label": "נדירים" }
 ];
 
@@ -254,8 +254,8 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
             </span>
           </div>
           
-          {/* Format dropdown - only show on vinyl page */}
-          {mode === 'vinyl' && (
+          {/* Format dropdown - show on vinyl and all pages */}
+          {(mode === 'vinyl' || mode === 'all') && (
             <div className={styles.filterDropdown}>
               <div className={styles.dropdownContainer}>
                 <label className={styles.dropdownLabel}>פורמט</label>
@@ -457,7 +457,7 @@ export function FilterBar({ mode, total, initialFilters, onFilterChange }: Filte
 
         {/* Row 2: Format + Genre + Condition */}
         <div className={`${styles.mobileRow} ${styles.mobileRow2}`}>
-          {mode === 'vinyl' && (
+          {(mode === 'vinyl' || mode === 'all') && (
             <div className={styles.filterDropdown}>
               <div className={styles.dropdownContainer}>
                 <label className={styles.dropdownLabel}>פורמט</label>
