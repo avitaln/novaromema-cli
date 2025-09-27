@@ -1,40 +1,39 @@
 import { useState, useCallback } from 'react';
-import { ToastMessage } from './Toast';
+import { CenterMessage } from './CenterMessage';
 
 export function useToast() {
-  const [messages, setMessages] = useState<ToastMessage[]>([]);
+  const [message, setMessage] = useState<CenterMessage | null>(null);
 
-  const addToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'info', duration?: number) => {
+  const showMessage = useCallback((messageText: string) => {
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-    const newMessage: ToastMessage = {
+    const newMessage: CenterMessage = {
       id,
-      message,
-      type,
-      duration
+      message: messageText
     };
 
-    setMessages(prev => [...prev, newMessage]);
+    // Override any existing message
+    setMessage(newMessage);
   }, []);
 
-  const removeToast = useCallback((id: string) => {
-    setMessages(prev => prev.filter(msg => msg.id !== id));
+  const removeMessage = useCallback(() => {
+    setMessage(null);
   }, []);
 
-  const showSuccess = useCallback((message: string, duration?: number) => {
-    addToast(message, 'success', duration);
-  }, [addToast]);
+  const showSuccess = useCallback((messageText: string) => {
+    showMessage(messageText);
+  }, [showMessage]);
 
-  const showError = useCallback((message: string, duration?: number) => {
-    addToast(message, 'error', duration);
-  }, [addToast]);
+  const showError = useCallback((messageText: string) => {
+    showMessage(messageText);
+  }, [showMessage]);
 
-  const showInfo = useCallback((message: string, duration?: number) => {
-    addToast(message, 'info', duration);
-  }, [addToast]);
+  const showInfo = useCallback((messageText: string) => {
+    showMessage(messageText);
+  }, [showMessage]);
 
   return {
-    messages,
-    removeToast,
+    message,
+    removeMessage,
     showSuccess,
     showError,
     showInfo

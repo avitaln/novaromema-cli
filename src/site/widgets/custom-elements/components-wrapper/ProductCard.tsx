@@ -3,7 +3,7 @@ import { CatalogAPI, type PartialProduct } from './api';
 import { createProductRoute } from './routes';
 import { addToCart } from '../../../../backend/cart.web';
 import { useToast } from './useToast';
-import { ToastContainer } from './Toast';
+import { CenterMessageDisplay } from './CenterMessage';
 import styles from './element.module.css';
 
 interface ProductCardProps {
@@ -16,7 +16,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { messages, removeToast, showSuccess, showError } = useToast();
+  const { message, removeMessage, showSuccess, showError } = useToast();
   
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
@@ -98,7 +98,7 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   
   return (
     <>
-      <ToastContainer messages={messages} onRemove={removeToast} />
+      <CenterMessageDisplay message={message} onRemove={removeMessage} />
       <div className={styles.productCard}>
       <a 
         href={productUrl}
