@@ -26,6 +26,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    // Don't navigate if already on home route
+    if (window.location.pathname === '/') {
+      return;
+    }
     onNavigateToHome();
   };
 

@@ -613,24 +613,42 @@ function CustomElement({ displayName, height, component, productId, productData 
 
   const navigateToHome = useCallback(() => {
     console.log('🏠 Navigating to home');
-    // Update URL to home
-    window.history.pushState({}, '', '/');
     
-    // Reset scroll position to top immediately
-    window.scrollTo(0, 0);
-    
-    setAppState(prev => ({
-      ...prev,
-      navigation: { currentView: 'home' },
-      // Clear home data to force fresh render
-      homeData: {
-        sections: [],
-        loading: false,
-        error: null,
-        scrollPosition: 0
+    // Check if we're already on home page to avoid redundant operations
+    setAppState(prev => {
+      if (prev.navigation.currentView === 'home' && window.location.pathname === '/') {
+        console.log('🔄 Already on home page, skipping navigation');
+        // Just scroll to top if already on home
+        window.scrollTo(0, 0);
+        return prev;
       }
-    }));
-  }, []);
+      
+      // Update URL to home
+      window.history.pushState({}, '', '/');
+      
+      // Reset scroll position to top immediately
+      window.scrollTo(0, 0);
+      
+      // Clear home data and set loading to true to trigger fetch
+      const newState = {
+        ...prev,
+        navigation: { currentView: 'home' as const },
+        homeData: {
+          sections: [],
+          loading: true,
+          error: null,
+          scrollPosition: 0
+        }
+      };
+      
+      // Trigger data fetch immediately
+      setTimeout(() => {
+        fetchHomeData();
+      }, 0);
+      
+      return newState;
+    });
+  }, [fetchHomeData]);
 
   const navigateToAbout = useCallback(() => {
     console.log('ℹ️ Navigating to about');
