@@ -56,10 +56,12 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart, onA
   };
 
   const handleAddToCart = () => {
-    if (product && onAddToCart) {
+    if (product && onAddToCart && (product.inventory === undefined || product.inventory > 0)) {
       onAddToCart(product);
     }
   };
+
+  const isOutOfStock = product?.inventory !== undefined && product.inventory <= 0;
 
   const handleAddToWishlist = () => {
     if (product && onAddToWishlist) {
@@ -144,6 +146,13 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart, onA
           
           <div className={styles.priceTextBig}>{product.price?.toFixed(2) ?? '0.00'} ₪</div>
           
+          {/* Inventory status */}
+          {product.inventory !== undefined && product.inventory <= 0 && (
+            <div className={styles.outOfStock}>
+              <span className={styles.outOfStockText}>אזל מהמלאי</span>
+            </div>
+          )}
+          
           <div><span className={styles.label}>Artist:</span> {product.artist}</div>
           <div><span className={styles.label}>Title:</span> {product.title}</div>
           {product.label ? <div><span className={styles.label}>Label:</span> {product.label}</div> : <div></div>}
@@ -168,12 +177,16 @@ export function ProductPage({ product, loading, error, onClose, onAddToCart, onA
           
           <div 
             role="button" 
-            className={`${styles.btn} ${styles.btnPriceBig}`}
-            tabIndex={0}
-            onClick={handleAddToCart}
-            onKeyUp={(e) => handleKeyUp(e, 'cart')}
+            className={`${styles.btn} ${styles.btnPriceBig} ${isOutOfStock ? styles.btnDisabled : ''}`}
+            tabIndex={isOutOfStock ? -1 : 0}
+            onClick={isOutOfStock ? undefined : handleAddToCart}
+            onKeyUp={isOutOfStock ? undefined : (e) => handleKeyUp(e, 'cart')}
+            style={{ 
+              opacity: isOutOfStock ? 0.5 : 1,
+              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+            }}
           >
-            הוספה לסל
+            {isOutOfStock ? 'אזל מהמלאי' : 'הוספה לסל'}
           </div>
           
 

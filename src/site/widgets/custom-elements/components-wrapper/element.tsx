@@ -322,7 +322,8 @@ function CustomElement({ displayName, height, component, productId, productData 
         limit: 25,
         offset,
         returnTotal: isInitial,
-        partial: true
+        partial: true,
+        onlyInStock: true
       };
 
       // Route-based format filtering

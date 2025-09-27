@@ -69,6 +69,7 @@ export interface ProductFilter {
   genres?: number[];
   isNew?: boolean;
   country?: string;
+  onlyInStock?: boolean;
 }
 
 export class CatalogAPI {
@@ -166,6 +167,7 @@ export class CatalogAPI {
     if (filter.genres) filterParams.genres = filter.genres;
     if (filter.isNew !== undefined) filterParams.isNew = filter.isNew;
     if (filter.country) filterParams.country = filter.country;
+    if (filter.onlyInStock !== undefined) filterParams.onlyInStock = filter.onlyInStock;
 
     // Build the query object, removing undefined values
     const query: any = {};
@@ -218,6 +220,7 @@ export class CatalogAPI {
 
   static async fetchProductDetailsBySlug(slug: string): Promise<FullProduct> {
     // Build query object for the new POST structure
+    // Note: We don't use onlyInStock filter for product pages to show out of stock products
     const query = {
       returnTotal: false,
       partial: false, // Not partial for product details
