@@ -208,6 +208,7 @@ export class CatalogAPI {
           price: Number(p.price),
           slug: p.slug,
           ribbon: p.ribbon,
+          shortFormat: p.shortFormat,
         })) as PartialProduct[],
       }));
     } catch (error) {
