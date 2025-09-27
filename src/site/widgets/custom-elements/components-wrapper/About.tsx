@@ -12,64 +12,41 @@ export const About: React.FC<AboutProps> = () => {
         </div>
         
         <div className={styles.aboutBody}>
-          <p className={styles.aboutSubtitle}>
-            נובה רוממה - החנות המובילה לתקליטים ודיסקים יד שניה בישראל
-          </p>
+          <blockquote className={styles.sectionText}>
+            לכל חנות יש "מי אנחנו", אבל נובה רוממה היא אופרציה של איש אחד אז זה לא "מי אנחנו" אלא "מי אני".
+          </blockquote>
           
           <div className={styles.aboutSections}>
             <div className={styles.aboutSection}>
-              <h2 className={styles.sectionTitle}>הסיפור שלנו</h2>
               <p className={styles.sectionText}>
-                נובה רוממה נוסדה מתוך אהבה עמוקה למוזיקה ורצון לשמר את התרבות המוזיקלית. 
-                אנחנו מתמחים במכירת תקליטים ודיסקים יד שניה באיכות גבוהה, ומציעים מגוון 
-                עצום של ז'אנרים ותקופות.
+                אני רני זגר ונובה רוממה קרויה ע"ש השכונה הראשונה בה התגוררתי בחיפה. עוד לפני שעברתי אליה ב-2014, עבדתי שנים ארוכות בחנויות תקליטים, חברות הפצה, כאיש תוכן בחברת ניו מדיה, הייתי לייבל מנג'ר של חברות תקליטים עצמאיות מחו"ל, ניהלתי חברת תקליטים קטנה משלי והייתי סולן בכל מיני להקות אזוטריות שככל הנראה לא שמעתם עליהם וכנראה שגם לא תרצו לשמוע.
               </p>
             </div>
             
             <div className={styles.aboutSection}>
-              <h2 className={styles.sectionTitle}>המשימה שלנו</h2>
               <p className={styles.sectionText}>
-                אנחנו מאמינים שלכל תקליט יש סיפור, ולכל שיר יש נשמה. המשימה שלנו היא 
-                לחבר בין אוהבי מוזיקה לבין האוצרות המוזיקליים שהם מחפשים, במחירים 
-                הוגנים ונגישים לכל כיס.
+                אחרי שכל החיים עבדתי כשכיר, הגעתי בגיל 47 למסקנה המתבקשת שהגיע הזמן לצאת לדרך עצמאית ולהפוך את הידע והניסיון הרב שצברתי בתעשיית המוזיקה המקומית והעולמית לנכס: כזה שבהחלט מספק לי פרנסה וגם מאפשר לי להציע בתודעת שירות גבוהה את מרכולתי הצנועה באופן הנגיש והמתגמל ביותר. לכן, תמצאו באתר הזה מבחר עצום, בדגש על יד שניה, של דיסקים ותקליטים במחירים אטרקטיביים, מצחיקים ושווים לכל נפש שאין בשום חנות אחרת לצד פריטי אספנות נדירים שמטבעם מתומחרים גבוה יותר.
               </p>
             </div>
             
             <div className={styles.aboutSection}>
-              <h2 className={styles.sectionTitle}>מה אנחנו מציעים</h2>
-              <ul className={styles.servicesList}>
-                <li className={styles.serviceItem}>
-                  <span className={styles.serviceBullet}>•</span>
-                  <span>מבחר עצום של תקליטי ויניל מכל הז'אנרים והתקופות</span>
-                </li>
-                <li className={styles.serviceItem}>
-                  <span className={styles.serviceBullet}>•</span>
-                  <span>דיסקים קומפקטיים באיכות מעולה במחירים אטרקטיביים</span>
-                </li>
-                <li className={styles.serviceItem}>
-                  <span className={styles.serviceBullet}>•</span>
-                  <span>פריטי אספנות נדירים ומיוחדים</span>
-                </li>
-                <li className={styles.serviceItem}>
-                  <span className={styles.serviceBullet}>•</span>
-                  <span>שירות מקצועי ויעוץ אישי מצוות מומחים</span>
-                </li>
-                <li className={styles.serviceItem}>
-                  <span className={styles.serviceBullet}>•</span>
-                  <span>אפשרות למכירת אוסף פרטי</span>
-                </li>
-              </ul>
+              <p className={styles.sectionText}>
+                אני פתוח וקשוב לכל ביקורת והצעת ייעול וזמין בווטסאפ שמופיע באתר לכל שאלה או תהייה.
+              </p>
+              <p className={styles.sectionText}>
+                או כמו שאומרים מעבר לים:
+              </p>
+              <p className={styles.sectionText}>
+                Buy with Confidence
+              </p>
+              <p className={styles.sectionText}>
+                לשירותכם
+              </p>
+              <p className={styles.signature}>
+                רני
+              </p>
             </div>
             
-            <div className={styles.aboutSection}>
-              <h2 className={styles.sectionTitle}>בואו לבקר אותנו</h2>
-              <p className={styles.sectionText}>
-                החנות שלנו פתוחה לכולם, ואנחנו תמיד שמחים לעזור ולייעץ.
-              </p>
-              <p className={styles.sectionQuote}>
-                כי במוזיקה, כמו בחיים, הדברים הטובים ביותר הם אלה שכבר עברו את מבחן הזמן.
-              </p>
-            </div>
           </div>
         </div>
       </div>
