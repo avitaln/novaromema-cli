@@ -2,13 +2,22 @@ import React from 'react';
 import { useCart } from './CartContext';
 import styles from './element.module.css';
 
-interface CartProps {
+interface CartButtonProps {
   onClick?: () => void;
 }
 
-export const Cart: React.FC<CartProps> = ({ onClick }) => {
+export const CartButton: React.FC<CartButtonProps> = ({ onClick }) => {
   const { itemCount, formattedTotal, loading } = useCart();
   const hasItems = itemCount > 0;
+
+  // Debug logging for cart button state
+  console.log('🛒 CartButton:', {
+    itemCount,
+    formattedTotal,
+    loading,
+    hasItems,
+    timestamp: new Date().toISOString()
+  });
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,4 +56,4 @@ export const Cart: React.FC<CartProps> = ({ onClick }) => {
   );
 };
 
-export default Cart;
+export default CartButton;

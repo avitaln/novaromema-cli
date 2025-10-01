@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCart } from './CartContext';
+import { CatalogAPI } from './api';
 import styles from './element.module.css';
 
 interface CartPageProps {
@@ -7,7 +8,30 @@ interface CartPageProps {
 }
 
 export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
-  const { cart, loading, error, updateQuantity, removeItem } = useCart();
+  const { cart, loading, error, removeItem } = useCart();
+
+  // Debug logging - Enhanced for local testing
+  console.group('🛒 CartPage Render');
+  console.log('Cart State:', {
+    loading,
+    error,
+    hasCart: !!cart,
+    cartId: cart?._id,
+    currency: cart?.currency,
+    lineItemsCount: cart?.lineItems?.length || 0,
+  });
+  
+  if (cart?.subtotal) {
+    console.log('Cart Totals:', {
+      subtotalAmount: cart.subtotal.amount,
+      subtotalFormatted: cart.subtotal.formattedAmount,
+    });
+  }
+  
+  if (cart?.lineItems) {
+    console.log(`Found ${cart.lineItems.length} line items in cart`);
+  }
+  console.groupEnd();
 
   if (loading) {
     return (
@@ -49,6 +73,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
   }
 
   if (!cart || !cart.lineItems || cart.lineItems.length === 0) {
+    console.log('CartPage: Showing empty cart state');
     return (
       <div className={styles.cartPageContainer}>
         <div className={styles.cartHeader}>
@@ -69,29 +94,39 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
     );
   }
 
+  console.log('CartPage: Rendering cart with items:', cart.lineItems.length);
+  console.log('💰 Cart Summary - Subtotal:', cart.subtotal);
+
   return (
     <div className={styles.cartPageContainer}>
       <div className={styles.cartHeader}>
         <h1 className={styles.cartTitle}>הסל שלי</h1>
-        <button onClick={onClose} className={styles.closeButton}>
-          ✕
-        </button>
       </div>
 
       <div className={styles.cartContent}>
         <div className={styles.cartItems}>
-          {cart.lineItems.map((item) => (
+          {cart.lineItems.map((item, index) => {
+            console.group(`📦 Cart Item #${index + 1}: ${item.productName?.translated || item.productName?.original || 'Unknown'}`);
+            console.log('Item JSON:');
+            console.log(JSON.stringify(item, null, 2));
+            console.groupEnd();
+            
+            // Build proper image URL using the same logic as ProductCard
+            const imageUrl = item.image ? CatalogAPI.buildImageUrl(item.image, 120, 120) : null;
+            
+            return (
             <div key={item._id} className={styles.cartItem}>
-              {item.image && (
+              {imageUrl && (
                 <div className={styles.cartItemImage}>
                   <img 
-                    src={item.image} 
+                    src={imageUrl} 
                     alt={item.productName.translated || item.productName.original}
+                    loading="lazy"
                   />
                 </div>
               )}
               
-              <div className={styles.cartItemDetails}>
+              <div className={styles.cartItemInfo}>
                 <h3 className={styles.cartItemName}>
                   {item.productName.translated || item.productName.original}
                 </h3>
@@ -122,64 +157,96 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
                     ))}
                   </div>
                 )}
-                
-                <div className={styles.cartItemPrice}>
-                  <span className={styles.unitPrice}>
-                    {item.price.formattedAmount}
-                  </span>
-                </div>
               </div>
-
-              <div className={styles.cartItemActions}>
-                <div className={styles.quantityControls}>
-                  <button 
-                    onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                    className={styles.quantityButton}
-                    disabled={item.quantity <= 1}
-                  >
-                    -
-                  </button>
-                  <span className={styles.quantity}>{item.quantity}</span>
-                  <button 
-                    onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                    className={styles.quantityButton}
-                  >
-                    +
-                  </button>
-                </div>
-                
-                <div className={styles.lineItemPrice}>
-                  {item.lineItemPrice.formattedAmount}
-                </div>
-                
-                <button 
-                  onClick={() => removeItem(item._id)}
-                  className={styles.removeButton}
-                  title="הסר פריט"
-                >
-                  🗑️
-                </button>
+              
+              <div className={styles.cartItemPriceSection}>
+                {item.fullPrice && parseFloat(item.fullPrice.amount) > parseFloat(item.price.amount) ? (
+                  <div className={styles.priceWithDiscount}>
+                    <span className={styles.originalPrice}>{item.fullPrice.formattedAmount}</span>
+                    {item.priceDescription && (
+                      <span className={styles.discountLabel}>
+                        {item.priceDescription.translated || item.priceDescription.original}
+                      </span>
+                    )}
+                    <span className={styles.finalPrice}>{item.price.formattedAmount}</span>
+                  </div>
+                ) : (
+                  <span className={styles.regularPrice}>{item.price.formattedAmount}</span>
+                )}
               </div>
+              
+              <button 
+                onClick={() => removeItem(item._id)}
+                className={styles.removeButton}
+                title="הסר פריט"
+              >
+                <svg width="20" height="20" viewBox="0 0 23 23" fill="currentColor">
+                  <path fillRule="evenodd" d="M13.5,3 C14.327,3 15,3.673 15,4.5 L15,4.5 L15,5 L19,5 L19,6 L18,6 L18,17.5 C18,18.879 16.878,20 15.5,20 L15.5,20 L7.5,20 C6.122,20 5,18.879 5,17.5 L5,17.5 L5,6 L4,6 L4,5 L8,5 L8,4.5 C8,3.673 8.673,3 9.5,3 L9.5,3 Z M17,6 L6,6 L6,17.5 C6,18.327 6.673,19 7.5,19 L7.5,19 L15.5,19 C16.327,19 17,18.327 17,17.5 L17,17.5 L17,6 Z M10,9 L10,16 L9,16 L9,9 L10,9 Z M14,9 L14,16 L13,16 L13,9 L14,9 Z M13.5,4 L9.5,4 C9.224,4 9,4.225 9,4.5 L9,4.5 L9,5 L14,5 L14,4.5 C14,4.225 13.776,4 13.5,4 L13.5,4 Z"></path>
+                </svg>
+              </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className={styles.cartSummary}>
-          <div className={styles.cartPageTotal}>
+          <div className={styles.cartTotals}>
             <div className={styles.totalRow}>
-              <span className={styles.totalLabel}>סה״כ:</span>
-              <span className={styles.totalAmount}>
+              <span className={styles.totalLabel}>סכום ביניים:</span>
+              <span className={styles.totalValue}>
                 {cart.subtotal.formattedAmount}
+              </span>
+            </div>
+            
+            {cart.discount && parseFloat(cart.discount.amount) > 0 && (
+              <div className={styles.totalRow}>
+                <span className={styles.totalLabel}>הנחה:</span>
+                <span className={styles.totalValue}>
+                  -{cart.discount.formattedAmount}
+                </span>
+              </div>
+            )}
+            
+            <div className={styles.totalRow}>
+              <span className={styles.totalLabel}>משלוח:</span>
+              <div className={styles.shippingSelection}>
+                <select className={styles.shippingSelect}>
+                  <option value="pickup">איסוף</option>
+                  <option value="delivery">משלוח</option>
+                </select>
+                <span className={styles.shippingPrice}>חינם</span>
+              </div>
+            </div>
+            
+            <div className={styles.totalRow}>
+              <span className={styles.totalLabel}>ישראל</span>
+            </div>
+            
+            <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
+              <span className={styles.totalLabel}>סך הכל:</span>
+              <span className={styles.totalAmount}>
+                {cart.subtotalAfterDiscounts?.formattedAmount || cart.subtotal.formattedAmount}
               </span>
             </div>
           </div>
           
+          <div className={styles.taxMessage}>
+            המס כלול במחיר
+          </div>
+          
+          <div className={styles.secureCheckout}>
+            <svg width="11" height="14" viewBox="0 0 11 14" xmlns="http://www.w3.org/2000/svg" className={styles.lockIcon}>
+              <g fill="currentColor" fillRule="evenodd">
+                <path d="M0 12.79c0 .558.445 1.01.996 1.01h9.008A1 1 0 0 0 11 12.79V6.01c0-.558-.445-1.01-.996-1.01H.996A1 1 0 0 0 0 6.01v6.78Z"></path>
+                <path d="M9.5 5v-.924C9.5 2.086 7.696.5 5.5.5c-2.196 0-4 1.586-4 3.576V5h1v-.924c0-1.407 1.33-2.576 3-2.576s3 1.17 3 2.576V5h1Z" fillRule="nonzero"></path>
+              </g>
+            </svg>
+            <span>הליך תשלום מאובטח</span>
+          </div>
+          
           <div className={styles.cartActions}>
             <button className={styles.checkoutButton}>
-              המשך לתשלום
-            </button>
-            <button onClick={onClose} className={styles.continueShoppingButton}>
-              המשך קניות
+              מעבר לתשלום
             </button>
           </div>
         </div>

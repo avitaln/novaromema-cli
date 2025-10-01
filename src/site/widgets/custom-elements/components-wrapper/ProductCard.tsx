@@ -1,9 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { CatalogAPI, type PartialProduct } from './api';
 import { createProductRoute } from './routes';
-import { addToCart } from '../../../../backend/cart.web';
-import { useToast } from './useToast';
-import { CenterMessageDisplay } from './CenterMessage';
+import { useCart } from './CartContext';
 import styles from './element.module.css';
 
 interface ProductCardProps {
@@ -15,8 +13,7 @@ interface ProductCardProps {
 export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const { message, removeMessage, showSuccess, showError } = useToast();
+  const { addToCart: addToCartContext, isAddingToCart, message, clearMessage } = useCart();
   
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
@@ -56,32 +53,15 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.stopPropagation();
     
-    if (isAddingToCart) return; // Prevent double clicks
+    const result = await addToCartContext(
+      product.id, 
+      1,
+      {},
+      { artist: product.artist, title: product.title }
+    );
     
-    setIsAddingToCart(true);
-    
-    try {
-      const result = await addToCart({
-        catalogItemId: product.id,
-        quantity: 1
-      });
-      
-      if (result.success) {
-        console.log('Item added to cart successfully:', result.cart);
-        showSuccess(`${product.artist} - ${product.title} נוסף לסל בהצלחה!`);
-        // Call the optional callback if provided
-        if (onAddToCart) {
-          onAddToCart(product);
-        }
-      } else {
-        console.error('Failed to add item to cart:', result.error);
-        showError(`שגיאה בהוספה לסל: ${result.message || 'שגיאה לא ידועה'}`);
-      }
-    } catch (error) {
-      console.error('Error adding item to cart:', error);
-      showError('שגיאה בהוספה לסל. אנא נסה שוב מאוחר יותר.');
-    } finally {
-      setIsAddingToCart(false);
+    if (result.success && onAddToCart) {
+      onAddToCart(product);
     }
   };
 
@@ -96,9 +76,37 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
     }
   };
   
+  // Format message for display
+  const displayMessage = message ? {
+    text: message.productInfo 
+      ? `${message.productInfo.artist} - ${message.productInfo.title} ${message.text}`
+      : message.text,
+    type: message.type === 'success' ? 'success' : 'error'
+  } : null;
+
   return (
     <>
-      <CenterMessageDisplay message={message} onRemove={removeMessage} />
+      {displayMessage && (
+        <div 
+          className={displayMessage.type === 'success' ? styles.successMessage : styles.errorMessage}
+          onClick={clearMessage}
+          style={{
+            position: 'fixed',
+            top: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '12px 24px',
+            borderRadius: '8px',
+            backgroundColor: displayMessage.type === 'success' ? '#4caf50' : '#f44336',
+            color: 'white',
+            zIndex: 10000,
+            cursor: 'pointer',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          {displayMessage.text}
+        </div>
+      )}
       <div className={styles.productCard}>
       <a 
         href={productUrl}

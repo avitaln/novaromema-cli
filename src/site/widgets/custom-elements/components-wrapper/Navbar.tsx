@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './element.module.css';
-import { Cart } from './Cart';
+import { CartButton } from './Cart';
 import { WIDGET_VERSION } from '../../constants';
 
 interface NavbarProps {
@@ -134,7 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
           </div>
 
           {/* Cart */}
-          <Cart onClick={onNavigateToCart} />
+          <CartButton onClick={onNavigateToCart} />
         </div>
       </div>
     </nav>

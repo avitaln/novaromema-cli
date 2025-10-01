@@ -1,0 +1,182 @@
+{
+  "lineItems": [
+    {
+      "quantity": 1,
+      "catalogReference": {
+        "catalogItemId": "dc3791855687",
+        "appId": "c3c66534-1ec3-4e2f-9768-e0309cbec8ca",
+        "options": {}
+      },
+      "productName": {
+        "original": "Avishai Cohen - Adama (CD)",
+        "translated": "Avishai Cohen - Adama (CD)"
+      },
+      "price": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "originalPrice": "19",
+      "originalFullPrice": "20",
+      "fullPrice": {
+        "amount": "20",
+        "convertedAmount": "20",
+        "formattedAmount": "20.00 ₪",
+        "formattedConvertedAmount": "20.00 ₪"
+      },
+      "priceBeforeDiscounts": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "lineItemPrice": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "descriptionLines": [],
+      "image": "2aaad6_19340f15900d4f6380b57faa8d1263cc~mv2.jpeg",
+      "availability": {
+        "status": "AVAILABLE",
+        "quantityAvailable": 1
+      },
+      "couponScopes": [],
+      "itemType": {
+        "preset": "PHYSICAL"
+      },
+      "paymentOption": "FULL_PAYMENT_ONLINE",
+      "rootCatalogItemId": "dc3791855687",
+      "priceDescription": {
+        "original": "הנחה של שקל",
+        "translated": "הנחה של שקל"
+      },
+      "customLineItem": false,
+      "priceUndetermined": false,
+      "fixedQuantity": true,
+      "savePaymentMethod": false,
+      "policies": [],
+      "membersOnly": false,
+      "modifierGroups": [],
+      "modifiersTotalPrice": {
+        "amount": "0",
+        "convertedAmount": "0",
+        "formattedAmount": "0.00 ₪",
+        "formattedConvertedAmount": "0.00 ₪"
+      },
+      "_id": "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      "quantity": 1,
+      "catalogReference": {
+        "catalogItemId": "dc3791855390",
+        "appId": "c3c66534-1ec3-4e2f-9768-e0309cbec8ca",
+        "options": {}
+      },
+      "productName": {
+        "original": "Avishai Cohen - Lyla (CD)",
+        "translated": "Avishai Cohen - Lyla (CD)"
+      },
+      "price": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "originalPrice": "19",
+      "originalFullPrice": "20",
+      "fullPrice": {
+        "amount": "20",
+        "convertedAmount": "20",
+        "formattedAmount": "20.00 ₪",
+        "formattedConvertedAmount": "20.00 ₪"
+      },
+      "priceBeforeDiscounts": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "lineItemPrice": {
+        "amount": "19",
+        "convertedAmount": "19",
+        "formattedAmount": "19.00 ₪",
+        "formattedConvertedAmount": "19.00 ₪"
+      },
+      "descriptionLines": [],
+      "image": "2aaad6_2abddb88c972474abfcdde590aa0fcd3~mv2.jpeg",
+      "availability": {
+        "status": "AVAILABLE",
+        "quantityAvailable": 1
+      },
+      "couponScopes": [],
+      "itemType": {
+        "preset": "PHYSICAL"
+      },
+      "paymentOption": "FULL_PAYMENT_ONLINE",
+      "rootCatalogItemId": "dc3791855390",
+      "priceDescription": {
+        "original": "הנחת סופר ספרטה 30%",
+        "translated": "הנחת סופר ספרטה 30%"
+      },
+      "customLineItem": false,
+      "priceUndetermined": false,
+      "fixedQuantity": true,
+      "savePaymentMethod": false,
+      "policies": [],
+      "membersOnly": false,
+      "modifierGroups": [],
+      "modifiersTotalPrice": {
+        "amount": "0",
+        "convertedAmount": "0",
+        "formattedAmount": "0.00 ₪",
+        "formattedConvertedAmount": "0.00 ₪"
+      },
+      "_id": "00000000-0000-0000-0000-000000000002"
+    }
+  ],
+  "buyerInfo": {
+    "visitorId": "c3252189-5dbd-47ae-8b6c-70d3a4ba13ad"
+  },
+  "currency": "ILS",
+  "conversionCurrency": "ILS",
+  "buyerLanguage": "he",
+  "siteLanguage": "he",
+  "taxIncludedInPrices": false,
+  "weightUnit": "KG",
+  "subtotal": {
+    "amount": "38",
+    "convertedAmount": "38",
+    "formattedAmount": "38.00 ₪",
+    "formattedConvertedAmount": "38.00 ₪"
+  },
+  "subtotalAfterDiscounts": {
+    "amount": "38",
+    "convertedAmount": "38",
+    "formattedAmount": "38.00 ₪",
+    "formattedConvertedAmount": "38.00 ₪"
+  },
+  "discount": {
+    "amount": "0",
+    "convertedAmount": "0",
+    "formattedAmount": "0.00 ₪",
+    "formattedConvertedAmount": "0.00 ₪"
+  },
+  "appliedDiscounts": [],
+  "contactInfo": {
+    "address": {
+      "subdivision": "IL-TA",
+      "country": "IL",
+      "postalCode": "",
+      "countryFullname": "ישראל"
+    }
+  },
+  "purchaseFlowId": "8d1f9b52-dcbd-4c87-bcea-303b74bf215c",
+  "paymentCurrency": "ILS",
+  "managedByV2": false,
+  "_id": "9803c64a-93d5-3cb8-97ec-6fb062601c68",
+  "_createdDate": "2025-09-26T14:38:15.317Z",
+  "_updatedDate": "2025-10-01T21:07:52.959Z"
+}
