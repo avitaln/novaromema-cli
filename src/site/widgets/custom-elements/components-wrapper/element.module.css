@@ -162,11 +162,12 @@
 }
 
 .cartItem {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto 1fr auto;
   gap: 1rem;
   padding: 1rem 0;
   border-bottom: 1px solid #e0e0e0;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .cartItem:first-child {
@@ -178,10 +179,10 @@
 }
 
 .cartItemImage {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
-  order: 1;
+  grid-column: 1;
 }
 
 .cartItemImage img {
@@ -192,33 +193,52 @@
 }
 
 .cartItemInfo {
-  flex: 1;
+  grid-column: 2;
   min-width: 0;
-  order: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
 }
 
 .cartItemName {
   font-size: 1.05rem;
   font-weight: 600;
   color: #333;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   line-height: 1.3;
+  width: 100%;
+  text-align: right;
 }
 
-.cartItemPriceSection {
+.cartItemPriceInfo {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.15rem;
-  order: 3;
-  margin-left: 1rem;
-  margin-right: auto;
+  width: 100%;
+}
+
+.priceRow {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cartItemPriceSection {
+  grid-column: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  justify-self: end;
 }
 
 .priceWithDiscount {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: flex-end;
   gap: 0.15rem;
 }
 
@@ -278,12 +298,17 @@
 
 
 .quantityControls {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  display: none;
+}
+
+.quantityInput {
+  width: 60px;
+  height: 32px;
+  text-align: center;
   border: 1px solid #ddd;
   border-radius: 4px;
-  padding: 0.25rem;
+  font-size: 1rem;
+  font-family: inherit;
 }
 
 .quantityButton {
@@ -321,6 +346,7 @@
 }
 
 .removeButton {
+  grid-column: 4;
   background: none;
   border: none;
   cursor: pointer;
@@ -331,7 +357,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  order: 4;
   flex-shrink: 0;
 }
 
@@ -353,6 +378,14 @@
   position: sticky;
   top: 2rem;
   align-self: flex-start;
+}
+
+.cartSummaryTitle {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: right;
 }
 
 .cartTotals {
@@ -382,12 +415,14 @@
 
 .totalLabel {
   font-size: 1rem;
-  color: #666;
+  color: #333;
+  font-weight: 400;
 }
 
 .totalValue {
   font-size: 1rem;
   color: #333;
+  font-weight: 600;
 }
 
 .totalAmount {
@@ -398,20 +433,29 @@
 
 .shippingSelection {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .shippingSelect {
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.9rem;
   background-color: white;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 0.75rem center;
+  padding-left: 2rem;
   cursor: pointer;
   outline: none;
   font-family: inherit;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  direction: rtl;
+  text-align: right;
+  min-width: 200px;
 }
 
 .shippingSelect:focus {
@@ -458,12 +502,14 @@
   background-color: #000000;
   color: #ffffff;
   border: none;
-  padding: 1rem;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  padding: 1rem 2rem;
+  border-radius: 0;
+  font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
+  width: 100%;
+  font-family: inherit;
 }
 
 .checkoutButton:hover {
@@ -503,9 +549,14 @@
   }
   
   .cartItem {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .cartItemImage {
+    width: 80px;
+    height: 80px;
   }
   
   .cartItemDetails {

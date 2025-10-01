@@ -8,30 +8,7 @@ interface CartPageProps {
 }
 
 export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
-  const { cart, loading, error, removeItem } = useCart();
-
-  // Debug logging - Enhanced for local testing
-  console.group('🛒 CartPage Render');
-  console.log('Cart State:', {
-    loading,
-    error,
-    hasCart: !!cart,
-    cartId: cart?._id,
-    currency: cart?.currency,
-    lineItemsCount: cart?.lineItems?.length || 0,
-  });
-  
-  if (cart?.subtotal) {
-    console.log('Cart Totals:', {
-      subtotalAmount: cart.subtotal.amount,
-      subtotalFormatted: cart.subtotal.formattedAmount,
-    });
-  }
-  
-  if (cart?.lineItems) {
-    console.log(`Found ${cart.lineItems.length} line items in cart`);
-  }
-  console.groupEnd();
+  const { cart, loading, error, updateQuantity, removeItem } = useCart();
 
   if (loading) {
     return (
@@ -73,7 +50,6 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
   }
 
   if (!cart || !cart.lineItems || cart.lineItems.length === 0) {
-    console.log('CartPage: Showing empty cart state');
     return (
       <div className={styles.cartPageContainer}>
         <div className={styles.cartHeader}>
@@ -94,13 +70,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
     );
   }
 
-  console.log('CartPage: Rendering cart with items:', cart.lineItems.length);
-  console.log('💰 Cart Summary - Subtotal:', cart.subtotal);
-
   return (
     <div className={styles.cartPageContainer}>
       <div className={styles.cartHeader}>
         <h1 className={styles.cartTitle}>הסל שלי</h1>
+        <button onClick={onClose} className={styles.closeButton}>
+          ✕
+        </button>
       </div>
 
       <div className={styles.cartContent}>
@@ -131,48 +107,27 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
                   {item.productName.translated || item.productName.original}
                 </h3>
                 
-                {item.descriptionLines && item.descriptionLines.length > 0 && (
-                  <div className={styles.cartItemOptions}>
-                    {item.descriptionLines.map((line, index) => (
-                      <div key={index} className={styles.cartItemOption}>
-                        <span className={styles.optionName}>
-                          {line.name.translated || line.name.original}:
-                        </span>
-                        <span className={styles.optionValue}>
-                          {line.colorInfo ? (
-                            <span className={styles.colorOption}>
-                              {line.colorInfo.code && (
-                                <span 
-                                  className={styles.colorSwatch}
-                                  style={{ backgroundColor: line.colorInfo.code }}
-                                ></span>
-                              )}
-                              {line.colorInfo.translated || line.colorInfo.original}
-                            </span>
-                          ) : (
-                            line.plainText?.translated || line.plainText?.original
-                          )}
-                        </span>
+                <div className={styles.cartItemPriceInfo}>
+                  {item.fullPrice && parseFloat(item.fullPrice.amount) > parseFloat(item.price.amount) ? (
+                    <>
+                      <div className={styles.priceRow}>
+                        <span className={styles.originalPrice}>{item.fullPrice.formattedAmount}</span>
+                        <span className={styles.finalPrice}>{item.price.formattedAmount}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      {item.priceDescription && (
+                        <span className={styles.discountLabel}>
+                          {item.priceDescription.translated || item.priceDescription.original}
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    <span className={styles.finalPrice}>{item.price.formattedAmount}</span>
+                  )}
+                </div>
               </div>
               
               <div className={styles.cartItemPriceSection}>
-                {item.fullPrice && parseFloat(item.fullPrice.amount) > parseFloat(item.price.amount) ? (
-                  <div className={styles.priceWithDiscount}>
-                    <span className={styles.originalPrice}>{item.fullPrice.formattedAmount}</span>
-                    {item.priceDescription && (
-                      <span className={styles.discountLabel}>
-                        {item.priceDescription.translated || item.priceDescription.original}
-                      </span>
-                    )}
-                    <span className={styles.finalPrice}>{item.price.formattedAmount}</span>
-                  </div>
-                ) : (
-                  <span className={styles.regularPrice}>{item.price.formattedAmount}</span>
-                )}
+                <span className={styles.finalPrice}>{item.price.formattedAmount}</span>
               </div>
               
               <button 
@@ -192,41 +147,46 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
         <div className={styles.cartSummary}>
           <div className={styles.cartTotals}>
             <div className={styles.totalRow}>
-              <span className={styles.totalLabel}>סכום ביניים:</span>
               <span className={styles.totalValue}>
                 {cart.subtotal.formattedAmount}
               </span>
+              <span className={styles.totalLabel}>סכום ביניים</span>
             </div>
             
             {cart.discount && parseFloat(cart.discount.amount) > 0 && (
               <div className={styles.totalRow}>
-                <span className={styles.totalLabel}>הנחה:</span>
                 <span className={styles.totalValue}>
                   -{cart.discount.formattedAmount}
                 </span>
+                <span className={styles.totalLabel}>הנחה</span>
               </div>
             )}
             
             <div className={styles.totalRow}>
-              <span className={styles.totalLabel}>משלוח:</span>
               <div className={styles.shippingSelection}>
                 <select className={styles.shippingSelect}>
-                  <option value="pickup">איסוף</option>
+                  <option value="pickup-tlv">איסוף עצמי מחנו אביב - תל אביב-יפו</option>
                   <option value="delivery">משלוח</option>
                 </select>
-                <span className={styles.shippingPrice}>חינם</span>
               </div>
+              <span className={styles.totalLabel}>משלוח</span>
             </div>
             
             <div className={styles.totalRow}>
+              <span className={styles.totalValue}></span>
+              <span className={styles.totalLabel}>איסוק</span>
+            </div>
+            
+            <div className={styles.totalRow}>
+              <span className={styles.totalValue}></span>
               <span className={styles.totalLabel}>ישראל</span>
             </div>
             
             <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
-              <span className={styles.totalLabel}>סך הכל:</span>
               <span className={styles.totalAmount}>
                 {cart.subtotalAfterDiscounts?.formattedAmount || cart.subtotal.formattedAmount}
               </span>
+              <span className={styles.totalLabel}>סך הכל</span>
             </div>
           </div>
           
