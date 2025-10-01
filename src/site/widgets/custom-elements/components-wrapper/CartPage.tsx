@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useCart } from './CartContext';
 import { CatalogAPI } from './api';
 import styles from './element.module.css';
@@ -7,8 +7,21 @@ interface CartPageProps {
   onClose: () => void;
 }
 
+interface ShippingOption {
+  id: string;
+  label: string;
+  cost: number;
+}
+
+const shippingOptions: ShippingOption[] = [
+  { id: 'regular', label: 'משלוח רגיל', cost: 20.0 },
+  { id: 'pickup1', label: 'איסוף עצמי - חנות ראשית', cost: 0 },
+  { id: 'pickup2', label: 'איסוף עצמי - חנות סניף', cost: 0 },
+];
+
 export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
   const { cart, loading, error, updateQuantity, removeItem } = useCart();
+  const [selectedShipping, setSelectedShipping] = useState<string>('regular');
 
   if (loading) {
     return (
@@ -31,7 +44,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
     return (
       <div className={styles.cartPageContainer}>
         <div className={styles.cartHeader}>
-          <h1 className={styles.cartTitle}>הסל שלי</h1>
+          <h1 className={styles.cartTitle}>סל הקניות שלי</h1>
           <button onClick={onClose} className={styles.closeButton}>
             ✕
           </button>
@@ -53,7 +66,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
     return (
       <div className={styles.cartPageContainer}>
         <div className={styles.cartHeader}>
-          <h1 className={styles.cartTitle}>הסל שלי</h1>
+          <h1 className={styles.cartTitle}>סל הקניות שלי</h1>
           <button onClick={onClose} className={styles.closeButton}>
             ✕
           </button>
@@ -72,15 +85,14 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
 
   return (
     <div className={styles.cartPageContainer}>
-      <div className={styles.cartHeader}>
-        <h1 className={styles.cartTitle}>הסל שלי</h1>
-        <button onClick={onClose} className={styles.closeButton}>
-          ✕
-        </button>
-      </div>
+      <button onClick={onClose} className={styles.closeButtonTop}>
+        ✕
+      </button>
 
       <div className={styles.cartContent}>
-        <div className={styles.cartItems}>
+        <div className={styles.cartItemsSection}>
+          <h1 className={styles.cartTitle}>סל הקניות שלי</h1>
+          <div className={styles.cartItems}>
           {cart.lineItems.map((item, index) => {
             console.group(`📦 Cart Item #${index + 1}: ${item.productName?.translated || item.productName?.original || 'Unknown'}`);
             console.log('Item JSON:');
@@ -142,10 +154,11 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
             </div>
             );
           })}
+          </div>
         </div>
 
         <div className={styles.cartSummary}>
-          <h2 className={styles.cartSummaryTitle}>סיכום הזמנה</h2>
+          <h2 className={styles.cartSummaryTitle}>סיכום ההזמנה</h2>
           <div className={styles.cartTotals}>
             <div className={styles.totalRow}>
               <span className={styles.totalLabel}>סכום ביניים</span>
@@ -153,45 +166,63 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
                 {cart.subtotal.formattedAmount}
               </span>
             </div>
-            
             <div className={styles.totalRow}>
               <span className={styles.totalLabel}>משלוח</span>
-              <div className={styles.shippingSelection}>
-                <select className={styles.shippingSelect}>
-                  <option value="regular">משלוח רגיל - 20.00 ₪</option>
-                  <option value="express">משלוח מהיר - 40.00 ₪</option>
-                  <option value="pickup">איסוף עצמי - חינם</option>
-                </select>
-                <div className={styles.shippingLocation}>ישראל</div>
-              </div>
-            </div>
-            
-            <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
-              <span className={styles.totalLabel}>סך הכל</span>
-              <span className={styles.totalAmount}>
-                {cart.subtotalAfterDiscounts?.formattedAmount || cart.subtotal.formattedAmount}
+              <span className={styles.totalValue}>
+                {shippingOptions.find(opt => opt.id === selectedShipping)?.cost === 0 
+                  ? 'חינם' 
+                  : `₪${shippingOptions.find(opt => opt.id === selectedShipping)?.cost.toFixed(2)}`
+                }
               </span>
             </div>
           </div>
-          
-          <div className={styles.taxMessage}>
-            המס כלול במחיר
+
+          <select 
+            className={styles.shippingSelect}
+            value={selectedShipping}
+            onChange={(e) => setSelectedShipping(e.target.value)}
+          >
+            {shippingOptions.map(option => (
+              <option key={option.id} value={option.id}>
+                {option.label} - {option.cost === 0 ? 'חינם' : `₪${option.cost.toFixed(2)}`}
+              </option>
+            ))}
+          </select>
+
+          <div className={styles.finalTotalContainer}>
+            <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
+              <span className={styles.totalLabel}>סך הכל</span>
+              <span className={styles.totalAmount}>
+                ₪{(
+                  parseFloat(cart.subtotal.amount) + 
+                  (shippingOptions.find(opt => opt.id === selectedShipping)?.cost || 0)
+                ).toFixed(2)}
+              </span>
+            </div>
+            <div className={styles.taxMessage}>המס כלול במחיר</div>
           </div>
-          
+
+          <div className={styles.cartActions}>
+            <button className={styles.checkoutButton}>מעבר לתשלום</button>
+          </div>
+
           <div className={styles.secureCheckout}>
-            <svg width="11" height="14" viewBox="0 0 11 14" xmlns="http://www.w3.org/2000/svg" className={styles.lockIcon}>
+            <svg
+              width="11"
+              height="14"
+              viewBox="0 0 11 14"
+              xmlns="http://www.w3.org/2000/svg"
+              className={styles.lockIcon}
+            >
               <g fill="currentColor" fillRule="evenodd">
                 <path d="M0 12.79c0 .558.445 1.01.996 1.01h9.008A1 1 0 0 0 11 12.79V6.01c0-.558-.445-1.01-.996-1.01H.996A1 1 0 0 0 0 6.01v6.78Z"></path>
-                <path d="M9.5 5v-.924C9.5 2.086 7.696.5 5.5.5c-2.196 0-4 1.586-4 3.576V5h1v-.924c0-1.407 1.33-2.576 3-2.576s3 1.17 3 2.576V5h1Z" fillRule="nonzero"></path>
+                <path
+                  d="M9.5 5v-.924C9.5 2.086 7.696.5 5.5.5c-2.196 0-4 1.586-4 3.576V5h1v-.924c0-1.407 1.33-2.576 3-2.576s3 1.17 3 2.576V5h1Z"
+                  fillRule="nonzero"
+                ></path>
               </g>
             </svg>
             <span>הליך תשלום מאובטח</span>
-          </div>
-          
-          <div className={styles.cartActions}>
-            <button className={styles.checkoutButton}>
-              מעבר לתשלום
-            </button>
           </div>
         </div>
       </div>
