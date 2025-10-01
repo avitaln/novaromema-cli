@@ -433,8 +433,9 @@
 
 .shippingSelection {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
 }
 
 .shippingSelect {
@@ -455,11 +456,20 @@
   -moz-appearance: none;
   direction: rtl;
   text-align: right;
-  min-width: 200px;
+  min-width: 100%;
+  width: 100%;
 }
 
 .shippingSelect:focus {
   border-color: #333;
+}
+
+.shippingLocation {
+  font-size: 0.9rem;
+  color: #333;
+  text-align: right;
+  width: 100%;
+  text-decoration: underline;
 }
 
 .shippingPrice {

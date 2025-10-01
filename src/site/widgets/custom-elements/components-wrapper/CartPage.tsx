@@ -14,7 +14,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
     return (
       <div className={styles.cartPageContainer}>
         <div className={styles.cartHeader}>
-          <h1 className={styles.cartTitle}>הסל שלי</h1>
+          <h1 className={styles.cartTitle}>סל הקניות שלי</h1>
           <button onClick={onClose} className={styles.closeButton}>
             ✕
           </button>
@@ -145,48 +145,32 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
         </div>
 
         <div className={styles.cartSummary}>
+          <h2 className={styles.cartSummaryTitle}>סיכום הזמנה</h2>
           <div className={styles.cartTotals}>
             <div className={styles.totalRow}>
+              <span className={styles.totalLabel}>סכום ביניים</span>
               <span className={styles.totalValue}>
                 {cart.subtotal.formattedAmount}
               </span>
-              <span className={styles.totalLabel}>סכום ביניים</span>
             </div>
             
-            {cart.discount && parseFloat(cart.discount.amount) > 0 && (
-              <div className={styles.totalRow}>
-                <span className={styles.totalValue}>
-                  -{cart.discount.formattedAmount}
-                </span>
-                <span className={styles.totalLabel}>הנחה</span>
-              </div>
-            )}
-            
             <div className={styles.totalRow}>
+              <span className={styles.totalLabel}>משלוח</span>
               <div className={styles.shippingSelection}>
                 <select className={styles.shippingSelect}>
-                  <option value="pickup-tlv">איסוף עצמי מחנו אביב - תל אביב-יפו</option>
-                  <option value="delivery">משלוח</option>
+                  <option value="regular">משלוח רגיל - 20.00 ₪</option>
+                  <option value="express">משלוח מהיר - 40.00 ₪</option>
+                  <option value="pickup">איסוף עצמי - חינם</option>
                 </select>
+                <div className={styles.shippingLocation}>ישראל</div>
               </div>
-              <span className={styles.totalLabel}>משלוח</span>
-            </div>
-            
-            <div className={styles.totalRow}>
-              <span className={styles.totalValue}></span>
-              <span className={styles.totalLabel}>איסוק</span>
-            </div>
-            
-            <div className={styles.totalRow}>
-              <span className={styles.totalValue}></span>
-              <span className={styles.totalLabel}>ישראל</span>
             </div>
             
             <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
+              <span className={styles.totalLabel}>סך הכל</span>
               <span className={styles.totalAmount}>
                 {cart.subtotalAfterDiscounts?.formattedAmount || cart.subtotal.formattedAmount}
               </span>
-              <span className={styles.totalLabel}>סך הכל</span>
             </div>
           </div>
           
