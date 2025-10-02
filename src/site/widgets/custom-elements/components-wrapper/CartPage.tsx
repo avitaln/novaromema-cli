@@ -133,8 +133,19 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
             console.log(JSON.stringify(item, null, 2));
             console.groupEnd();
             
+            // Strip the wix:image://v1/ prefix if present
+            let cleanImage = item.image;
+            if (cleanImage && cleanImage.startsWith('wix:image://v1/')) {
+              cleanImage = cleanImage.replace('wix:image://v1/', '');
+            }
+            
+            // Stop at the first '/' to get just the filename
+            if (cleanImage && cleanImage.includes('/')) {
+              cleanImage = cleanImage.split('/')[0];
+            }
+            
             // Build proper image URL using the same logic as ProductCard
-            const imageUrl = item.image ? CatalogAPI.buildImageUrl(item.image, 120, 120) : null;
+            const imageUrl = cleanImage ? CatalogAPI.buildImageUrl(cleanImage, 120, 120) : null;
             
             return (
             <div key={item._id} className={styles.cartItem}>

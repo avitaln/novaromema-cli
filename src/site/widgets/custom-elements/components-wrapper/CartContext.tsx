@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { currentCart } from '@wix/ecom';
 import { addToCart as addToCartBackend } from '../../../../backend/cart.web';
 import mockCartData from './mock-cart-data.json';
+import { CenterMessage, CenterMessageDisplay } from './CenterMessage';
 
 interface CartItem {
   _id: string;
@@ -95,15 +96,6 @@ interface ShippingInfo {
   }>;
 }
 
-interface CartMessage {
-  type: 'success' | 'error' | null;
-  text: string;
-  productInfo?: {
-    artist: string;
-    title: string;
-  };
-}
-
 interface CartContextType {
   cart: Cart | null;
   loading: boolean;
@@ -111,8 +103,8 @@ interface CartContextType {
   itemCount: number;
   totalAmount: string;
   formattedTotal: string;
-  isAddingToCart: boolean;
-  message: CartMessage | null;
+  addingProductId: string | null;
+  message: CenterMessage | null;
   shippingInfo: ShippingInfo | null;
   refreshCart: () => Promise<void>;
   addToCart: (catalogItemId: string, quantity?: number, options?: Record<string, any>, productInfo?: { artist: string; title: string }) => Promise<{ success: boolean; error?: string; message?: string }>;
@@ -140,8 +132,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [message, setMessage] = useState<CartMessage | null>(null);
+  const [addingProductId, setAddingProductId] = useState<string | null>(null);
+  const [message, setMessage] = useState<CenterMessage | null>(null);
   const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
 
   const refreshCart = async () => {
@@ -320,12 +312,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     productInfo?: { artist: string; title: string }
   ): Promise<{ success: boolean; error?: string; message?: string }> => {
     // Prevent double-clicks
-    if (isAddingToCart) {
+    if (addingProductId) {
       console.log('CartContext: Already adding to cart, ignoring duplicate request');
       return { success: false, message: 'Already adding to cart' };
     }
 
-    setIsAddingToCart(true);
+    setAddingProductId(catalogItemId);
     setMessage(null); // Clear any previous messages
 
     const IS_TEST = import.meta.env.VITE_IS_TEST === 'true';
@@ -339,23 +331,16 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       console.log('🧪 [TEST MODE] Item would be added to cart');
       
       // Set success message
-      if (productInfo) {
-        setMessage({
-          type: 'success',
-          text: '🧪 [TEST] נוסף לסל בהצלחה!',
-          productInfo
-        });
-      } else {
-        setMessage({
-          type: 'success',
-          text: '🧪 [TEST] המוצר נוסף לסל בהצלחה!'
-        });
-      }
+      const messageText = productInfo 
+        ? `🧪 [TEST] ${productInfo.artist} - ${productInfo.title} נוסף לסל בהצלחה!`
+        : '🧪 [TEST] המוצר נוסף לסל בהצלחה!';
       
-      // Auto-clear message after 3 seconds
-      setTimeout(() => setMessage(null), 3000);
+      setMessage({
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        message: messageText
+      });
       
-      setIsAddingToCart(false);
+      setAddingProductId(null);
       return { success: true, message: 'Item added to cart (test mode)' };
     }
 
@@ -372,21 +357,14 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         console.log('CartContext: Item added successfully');
         
         // Set success message
-        if (productInfo) {
-          setMessage({
-            type: 'success',
-            text: 'נוסף לסל בהצלחה!',
-            productInfo
-          });
-        } else {
-          setMessage({
-            type: 'success',
-            text: 'המוצר נוסף לסל בהצלחה!'
-          });
-        }
+        const messageText = productInfo 
+          ? `${productInfo.artist} - ${productInfo.title} נוסף לסל בהצלחה!`
+          : 'המוצר נוסף לסל בהצלחה!';
         
-        // Auto-clear message after 3 seconds
-        setTimeout(() => setMessage(null), 3000);
+        setMessage({
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          message: messageText
+        });
         
         // Trigger cart refresh by dispatching custom event
         window.dispatchEvent(new CustomEvent('cartUpdated'));
@@ -401,12 +379,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         
         // Set error message
         setMessage({
-          type: 'error',
-          text: `שגיאה בהוספה לסל: ${result.message || 'שגיאה לא ידועה'}`
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          message: `שגיאה בהוספה לסל: ${result.message || 'שגיאה לא ידועה'}`
         });
-        
-        // Auto-clear error message after 5 seconds
-        setTimeout(() => setMessage(null), 5000);
         
         return { 
           success: false, 
@@ -419,12 +394,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       
       // Set error message
       setMessage({
-        type: 'error',
-        text: 'שגיאה בהוספה לסל. אנא נסה שוב מאוחר יותר.'
+        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+        message: 'שגיאה בהוספה לסל. אנא נסה שוב מאוחר יותר.'
       });
-      
-      // Auto-clear error message after 5 seconds
-      setTimeout(() => setMessage(null), 5000);
       
       return { 
         success: false, 
@@ -432,7 +404,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         message: 'Error adding item to cart'
       };
     } finally {
-      setIsAddingToCart(false);
+      setAddingProductId(null);
     }
   };
 
@@ -510,7 +482,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     itemCount,
     totalAmount,
     formattedTotal,
-    isAddingToCart,
+    addingProductId,
     message,
     shippingInfo,
     refreshCart,
@@ -523,6 +495,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   return (
     <CartContext.Provider value={value}>
+      <CenterMessageDisplay message={message} onRemove={clearMessage} />
       {children}
     </CartContext.Provider>
   );

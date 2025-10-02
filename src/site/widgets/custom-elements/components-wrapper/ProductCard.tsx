@@ -13,7 +13,10 @@ interface ProductCardProps {
 export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { addToCart: addToCartContext, isAddingToCart, message, clearMessage } = useCart();
+  const { addToCart: addToCartContext, addingProductId } = useCart();
+  
+  // Check if THIS specific product is being added
+  const isAddingToCart = addingProductId === product.id;
   
   const imageUrl = useMemo(() => {
     return CatalogAPI.buildImageUrl(product.image, 260, 260);
@@ -75,39 +78,9 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
       }
     }
   };
-  
-  // Format message for display
-  const displayMessage = message ? {
-    text: message.productInfo 
-      ? `${message.productInfo.artist} - ${message.productInfo.title} ${message.text}`
-      : message.text,
-    type: message.type === 'success' ? 'success' : 'error'
-  } : null;
 
   return (
-    <>
-      {displayMessage && (
-        <div 
-          className={displayMessage.type === 'success' ? styles.successMessage : styles.errorMessage}
-          onClick={clearMessage}
-          style={{
-            position: 'fixed',
-            top: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            padding: '12px 24px',
-            borderRadius: '8px',
-            backgroundColor: displayMessage.type === 'success' ? '#4caf50' : '#f44336',
-            color: 'white',
-            zIndex: 10000,
-            cursor: 'pointer',
-            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-          }}
-        >
-          {displayMessage.text}
-        </div>
-      )}
-      <div className={styles.productCard}>
+    <div className={styles.productCard}>
       <a 
         href={productUrl}
         className={styles.productImageContainer}
@@ -163,6 +136,5 @@ export function ProductCard({ product, onImageClick, onAddToCart }: ProductCardP
         </div>
       </div>
     </div>
-    </>
   );
 }
