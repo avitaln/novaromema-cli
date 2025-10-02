@@ -3,12 +3,13 @@ import { HomePage } from './HomePage';
 import { ProductGallery } from './ProductGallery';
 import { ProductPage } from './ProductPage';
 import { ProductCard } from './ProductCard';
-import { About } from './About';
+import { TextPage } from './TextPage';
 import { CartPage } from './CartPage';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
 import { ROUTES, createProductRoute, parseProductRoute } from './routes';
+import { ABOUT_CONTENT, TERMS_CONTENT, ACCESSIBILITY_CONTENT } from './content.tsx';
 import styles from './element.module.css';
 
 // Valid filter keys for URL parameter parsing
@@ -62,7 +63,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart';
+    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart' | 'terms' | 'accessibility';
     previousView?: 'home' | 'gallery';
     productId?: string;
   };
@@ -251,6 +252,16 @@ const Router: React.FC<RouterProps> = ({
     forceUpdate({});
   };
 
+  const navigateToTerms = () => {
+    window.history.pushState({}, '', ROUTES.TERMS);
+    forceUpdate({});
+  };
+
+  const navigateToAccessibility = () => {
+    window.history.pushState({}, '', ROUTES.ACCESSIBILITY);
+    forceUpdate({});
+  };
+
 
   // Parse current route
   const getCurrentRoute = () => {
@@ -290,6 +301,10 @@ const Router: React.FC<RouterProps> = ({
       return { view: 'about' as const };
     } else if (path === ROUTES.CART) {
       return { view: 'cart' as const };
+    } else if (path === ROUTES.TERMS) {
+      return { view: 'terms' as const };
+    } else if (path === ROUTES.ACCESSIBILITY) {
+      return { view: 'accessibility' as const };
     } else if (path === ROUTES.GALLERY) {
       const filters: Partial<FilterOptions> = {};
       searchParams.forEach((value, key) => {
@@ -444,7 +459,7 @@ const Router: React.FC<RouterProps> = ({
         );
       
       case 'about':
-        return <About />;
+        return <TextPage content={ABOUT_CONTENT} />;
       
       case 'cart':
         return (
@@ -459,6 +474,12 @@ const Router: React.FC<RouterProps> = ({
             }}
           />
         );
+      
+      case 'terms':
+        return <TextPage content={TERMS_CONTENT} />;
+      
+      case 'accessibility':
+        return <TextPage content={ACCESSIBILITY_CONTENT} />;
       
       default:
         return (
@@ -491,6 +512,10 @@ const Router: React.FC<RouterProps> = ({
         onNavigateToHome={navigateToHome} 
         onNavigateToGallery={navigateToGallery}
         onNavigateToAbout={navigateToAbout}
+        onNavigateToVinyl={navigateToVinyl}
+        onNavigateToCd={navigateToCd}
+        onNavigateToTerms={navigateToTerms}
+        onNavigateToAccessibility={navigateToAccessibility}
       />
     </div>
   );

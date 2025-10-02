@@ -7,7 +7,9 @@ export const ROUTES = {
   CD: '/cd',
   VINYL: '/vinyl',
   ALL: '/all',
-  CART: '/cart'
+  CART: '/cart',
+  TERMS: '/terms',
+  ACCESSIBILITY: '/accessibility'
 } as const;
 
 // Helper functions for route generation

@@ -1,9 +1,7 @@
 import React from 'react';
-import styles from './element.module.css';
 
-interface AboutProps {}
-
-const ABOUT_CONTENT = (
+// About page content
+export const ABOUT_CONTENT = (
   <>
     <h1>מי אנחנו</h1>
     
@@ -41,12 +39,25 @@ const ABOUT_CONTENT = (
   </>
 );
 
-export const About: React.FC<AboutProps> = () => {
-  return (
-    <div className={styles.aboutContainer} dir="rtl">
-      {ABOUT_CONTENT}
-    </div>
-  );
-};
+// Terms page content
+export const TERMS_CONTENT = (
+  <>
+    <h1>תקנון האתר</h1>
+    
+    <p>
+      תוכן תקנון האתר יתווסף בקרוב.
+    </p>
+  </>
+);
 
-export default About;
+// Accessibility page content
+export const ACCESSIBILITY_CONTENT = (
+  <>
+    <h1>הצהרת נגישות</h1>
+    
+    <p>
+      תוכן הצהרת הנגישות יתווסף בקרוב.
+    </p>
+  </>
+);
+

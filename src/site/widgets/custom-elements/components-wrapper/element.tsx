@@ -4,13 +4,14 @@ import reactToWebComponent from 'react-to-webcomponent';
 import { ProductGallery } from './ProductGallery';
 import { ProductPage } from './ProductPage';
 import { HomePage } from './HomePage';
-import { About } from './About';
+import { TextPage } from './TextPage';
 import { CartPage } from './CartPage';
 import { CartProvider } from './CartContext';
 import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
 import { ROUTES, createProductRoute, parseProductRoute } from './routes';
+import { ABOUT_CONTENT, TERMS_CONTENT, ACCESSIBILITY_CONTENT } from './content.tsx';
 import styles from './element.module.css';
 
 interface Props {
@@ -70,7 +71,7 @@ interface SharedAppState {
   
   // Navigation state
   navigation: {
-    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart';
+    currentView: 'home' | 'gallery' | 'product' | 'about' | 'cart' | 'terms' | 'accessibility';
     previousView?: 'home' | 'gallery' | 'about';
     productId?: string;
     isRestoringScroll?: boolean;
@@ -185,6 +186,18 @@ function CustomElement({ displayName, height, component, productId, productData 
     if (path === ROUTES.CART) {
       console.log('🛒 Cart route detected:', path);
       return { currentView: 'cart' };
+    }
+    
+    // Check for terms page
+    if (path === ROUTES.TERMS) {
+      console.log('📄 Terms route detected:', path);
+      return { currentView: 'terms' };
+    }
+    
+    // Check for accessibility page
+    if (path === ROUTES.ACCESSIBILITY) {
+      console.log('♿ Accessibility route detected:', path);
+      return { currentView: 'accessibility' };
     }
     
     // Check if we're on home page or no nested route (default to home)
@@ -730,6 +743,32 @@ function CustomElement({ displayName, height, component, productId, productData 
     setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
   }, [fetchGalleryData]);
 
+  const navigateToTerms = useCallback(() => {
+    console.log('📄 Navigating to terms');
+    window.history.pushState({}, '', '/terms');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'terms' }
+    }));
+  }, []);
+
+  const navigateToAccessibility = useCallback(() => {
+    console.log('♿ Navigating to accessibility');
+    window.history.pushState({}, '', '/accessibility');
+    
+    // Reset scroll position to top immediately
+    window.scrollTo(0, 0);
+    
+    setAppState(prev => ({
+      ...prev,
+      navigation: { currentView: 'accessibility' }
+    }));
+  }, []);
+
   const navigateToSlug = useCallback((slug: string) => {
     console.log('🔗 Navigating to slug:', slug);
     // Parse the slug to extract path and query parameters
@@ -1035,7 +1074,7 @@ function CustomElement({ displayName, height, component, productId, productData 
         
         
       case 'about':
-        return <About />;
+        return <TextPage content={ABOUT_CONTENT} />;
         
       case 'cart':
         return (
@@ -1050,6 +1089,12 @@ function CustomElement({ displayName, height, component, productId, productData 
             }}
           />
         );
+        
+      case 'terms':
+        return <TextPage content={TERMS_CONTENT} />;
+        
+      case 'accessibility':
+        return <TextPage content={ACCESSIBILITY_CONTENT} />;
         
       default:
         return (
@@ -1087,6 +1132,10 @@ function CustomElement({ displayName, height, component, productId, productData 
           onNavigateToHome={navigateToHome}
           onNavigateToGallery={navigateToGallery}
           onNavigateToAbout={navigateToAbout}
+          onNavigateToVinyl={navigateToVinyl}
+          onNavigateToCd={navigateToCd}
+          onNavigateToTerms={navigateToTerms}
+          onNavigateToAccessibility={navigateToAccessibility}
         />
       </div>
     </CartProvider>
