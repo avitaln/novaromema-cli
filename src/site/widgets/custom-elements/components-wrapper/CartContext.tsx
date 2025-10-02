@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { currentCart } from '@wix/ecom';
 import { addToCart as addToCartBackend } from '../../../../backend/cart.web';
-import mockCartData from './mock-cart-data.json';
 import { CenterMessage, CenterMessageDisplay } from './CenterMessage';
 
 interface CartItem {
@@ -140,35 +139,10 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Use mock data in test environment
-      const IS_TEST = import.meta.env.VITE_IS_TEST === 'true';
-      
-      if (IS_TEST) {
-        console.log('🧪 CartContext: Using MOCK cart data for testing');
-        const estimateData = mockCartData as any;
-        const cartData = estimateData.cart as Cart;
-        const shippingData = estimateData.shippingInfo as ShippingInfo;
-        console.log('CartContext: Mock cart data loaded (summary):', {
-          cartId: cartData._id,
-          lineItemsCount: cartData.lineItems?.length || 0,
-          subtotal: cartData?.subtotal,
-          currency: cartData?.currency,
-          selectedShipping: shippingData?.selectedCarrierServiceOption?.title,
-          availableOptions: shippingData?.carrierServiceOptions?.reduce((acc, carrier) => acc + carrier.shippingOptions.length, 0),
-        });
-        console.log('CartContext: Full mock estimate data JSON:');
-        console.log(JSON.stringify(estimateData, null, 2));
-        setCart(cartData);
-        setShippingInfo(shippingData);
-        setLoading(false);
-        return;
-      }
-      
       console.log('CartContext: Fetching cart data...');
       const estimateData = await currentCart.estimateCurrentCartTotals();
-      const cartData = (estimateData as any).cart as Cart;
-      const shippingData = (estimateData as any).shippingInfo as ShippingInfo;
+      const cartData = estimateData.cart as Cart;
+      const shippingData = estimateData.shippingInfo as ShippingInfo;
       console.log('CartContext: Cart data received (summary):', {
         cartId: cartData._id,
         lineItemsCount: cartData.lineItems?.length || 0,
@@ -320,30 +294,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setAddingProductId(catalogItemId);
     setMessage(null); // Clear any previous messages
 
-    const IS_TEST = import.meta.env.VITE_IS_TEST === 'true';
-    
-    if (IS_TEST) {
-      console.log('🧪 CartContext: [TEST MODE] Simulating add to cart:', { catalogItemId, quantity, options });
-      
-      // Simulate async operation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      console.log('🧪 [TEST MODE] Item would be added to cart');
-      
-      // Set success message
-      const messageText = productInfo 
-        ? `🧪 [TEST] ${productInfo.artist} - ${productInfo.title} נוסף לסל בהצלחה!`
-        : '🧪 [TEST] המוצר נוסף לסל בהצלחה!';
-      
-      setMessage({
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        message: messageText
-      });
-      
-      setAddingProductId(null);
-      return { success: true, message: 'Item added to cart (test mode)' };
-    }
-
     try {
       console.log('CartContext: Adding item to cart:', { catalogItemId, quantity, options });
       
@@ -430,45 +380,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     };
   }, []);
 
-  // Expose cart data and refresh function to window for easy debugging
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).__NOVA_CART_DEBUG__ = {
-        getCartData: () => {
-          const data = {
-            cart,
-            loading,
-            error,
-            itemCount: cart?.lineItems?.reduce((total, item) => total + item.quantity, 0) || 0,
-            timestamp: new Date().toISOString()
-          };
-          console.log('=== CART DATA JSON (Copy this) ===');
-          console.log(JSON.stringify(data, null, 2));
-          console.log('=== END CART DATA ===');
-          return data;
-        },
-        copyCartData: () => {
-          const data = {
-            cart,
-            loading,
-            error,
-            itemCount: cart?.lineItems?.reduce((total, item) => total + item.quantity, 0) || 0,
-            timestamp: new Date().toISOString()
-          };
-          const jsonStr = JSON.stringify(data, null, 2);
-          navigator.clipboard.writeText(jsonStr).then(() => {
-            console.log('✅ Cart data copied to clipboard!');
-          }).catch((err) => {
-            console.error('Failed to copy to clipboard:', err);
-            console.log('Please manually copy the JSON below:');
-            console.log(jsonStr);
-          });
-          return jsonStr;
-        },
-        refreshCart: refreshCart
-      };
-    }
-  }, [cart, loading, error, refreshCart]);
 
   // Calculate derived values
   const itemCount = cart?.lineItems?.reduce((total, item) => total + item.quantity, 0) || 0;

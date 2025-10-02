@@ -43,11 +43,6 @@ export interface CatalogResponse<TProduct> {
   total?: number;
 }
 
-// Switch between localhost and production
-console.log('Environment check:', { 
-  'import.meta.env.VITE_IS_TEST': import.meta.env.VITE_IS_TEST,
-  'import.meta.env': import.meta.env 
-});
 const IS_LOCAL = import.meta.env.VITE_IS_TEST === 'true';
 console.log('IS_LOCAL:', IS_LOCAL);
 const BASE_URL = IS_LOCAL ? 'http://localhost:8080' : 'https://novaromema-public.fly.dev';

@@ -223,7 +223,7 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
             </div>
           </div>
 
-          {allShippingOptions.length > 0 && (
+          {allShippingOptions.length > 1 && (
             <select 
               className={styles.shippingSelect}
               value={selectedShipping}

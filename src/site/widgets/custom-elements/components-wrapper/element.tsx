@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import * as ReactDOMClient from 'react-dom/client';
 import reactToWebComponent from 'react-to-webcomponent';
-import { APP_NAME, WIDGET_VERSION } from '../../constants';
 import { ProductGallery } from './ProductGallery';
-import { ProductCard } from './ProductCard';
 import { ProductPage } from './ProductPage';
 import { HomePage } from './HomePage';
 import { About } from './About';

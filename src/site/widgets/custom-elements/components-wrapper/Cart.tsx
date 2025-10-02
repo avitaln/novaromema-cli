@@ -10,15 +10,6 @@ export const CartButton: React.FC<CartButtonProps> = ({ onClick }) => {
   const { itemCount, formattedTotal, loading } = useCart();
   const hasItems = itemCount > 0;
 
-  // Debug logging for cart button state
-  console.log('🛒 CartButton:', {
-    itemCount,
-    formattedTotal,
-    loading,
-    hasItems,
-    timestamp: new Date().toISOString()
-  });
-
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (onClick) {

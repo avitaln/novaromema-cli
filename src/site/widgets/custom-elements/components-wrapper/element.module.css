@@ -604,78 +604,31 @@
 .aboutContainer {
   background: #ffffff;
   min-height: 100vh;
+  width: 100%;
   padding: 1.25rem;
   color: #000000;
 }
 
-.aboutContent {
+.aboutContainer > * {
   max-width: 800px;
-  margin: 0 auto;
-  background: white;
-  padding: 0;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.aboutHeader {
-  background: transparent;
+.aboutContainer h1 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-top: 0;
+  margin-bottom: 1.25rem;
   color: #000000;
-  padding: 0 0 1.25rem 0;
   text-align: right;
 }
 
-.aboutTitle {
-  font-size: 1.75rem;
-  font-weight: bold;
-  margin: 0;
-  color: #000000;
-}
-
-.aboutBody {
-  padding: 0;
-  color: #000000;
-}
-
-.aboutSubtitle {
-  font-size: 20px;
-  text-align: center;
-  margin-bottom: 40px;
-  color: #666;
-  font-weight: 500;
-}
-
-.aboutSections {
-  display: block;
-}
-
-.aboutSection {
-  margin-bottom: 1.25rem;
-}
-
-.sectionTitle {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 16px;
-  color: #242A35;
-  border-bottom: 2px solid #efefef;
-  padding-bottom: 8px;
-}
-
-.sectionText {
+.aboutContainer p {
   font-size: 1.25rem;
   line-height: 1.6;
   margin-bottom: 1rem;
   color: #000000;
-}
-
-.sectionQuote {
-  font-size: 16px;
-  font-style: italic;
-  text-align: center;
-  color: #666;
-  margin-top: 20px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-right: 4px solid #242A35;
 }
 
 .servicesList {
@@ -699,70 +652,18 @@
   margin-top: 2px;
 }
 
-.aboutQuote {
-  font-size: 16px;
-  line-height: 1.6;
-  margin: 20px 0;
-  color: #000000;
-  padding: 0;
-  border: none;
-  background: none;
-  font-style: normal;
-}
-
-.signature {
-  font-size: 1.25rem;
-  line-height: 1.6;
-  margin-bottom: 20px;
-  color: #000000;
-  font-weight: bold;
-}
-
-.contactInfo {
-  display: block;
-}
-
-.contactItem {
-  margin-bottom: 12px;
-  display: block;
-}
-
-.contactLabel {
-  display: block;
-  font-size: 14px;
-  color: #000000;
-  margin-bottom: 4px;
-}
-
-.contactLink {
-  color: #0066cc;
-  text-decoration: underline;
-  font-size: 14px;
-}
-
-.contactLink:hover {
-  color: #0052a3;
-}
-
 @media (max-width: 768px) {
   .aboutContainer {
     padding: 1rem 0.75rem;
-  }
-  
-  .aboutContent {
     max-width: 100%;
   }
   
-  .aboutTitle {
+  .aboutContainer h1 {
     font-size: 1.5rem;
   }
   
-  .sectionText, .aboutQuote, .englishText, .signature {
+  .aboutContainer p {
     font-size: 1rem;
-  }
-  
-  .contactLabel, .contactLink {
-    font-size: 0.875rem;
   }
 }
 
