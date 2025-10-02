@@ -63,6 +63,38 @@ interface Cart {
   taxIncludedInPrices?: boolean;
 }
 
+interface ShippingOption {
+  code: string;
+  title: string;
+  cost: {
+    price: {
+      amount: string;
+      formattedAmount: string;
+    };
+  };
+  logistics?: {
+    instructions?: string;
+    pickupDetails?: {
+      address?: {
+        addressLine1?: string;
+        city?: string;
+      };
+      pickupMethod?: string;
+    };
+  };
+}
+
+interface ShippingInfo {
+  selectedCarrierServiceOption?: {
+    code: string;
+    title: string;
+  };
+  carrierServiceOptions?: Array<{
+    carrierId: string;
+    shippingOptions: ShippingOption[];
+  }>;
+}
+
 interface CartMessage {
   type: 'success' | 'error' | null;
   text: string;
@@ -81,10 +113,12 @@ interface CartContextType {
   formattedTotal: string;
   isAddingToCart: boolean;
   message: CartMessage | null;
+  shippingInfo: ShippingInfo | null;
   refreshCart: () => Promise<void>;
   addToCart: (catalogItemId: string, quantity?: number, options?: Record<string, any>, productInfo?: { artist: string; title: string }) => Promise<{ success: boolean; error?: string; message?: string }>;
   updateQuantity: (lineItemId: string, newQuantity: number) => Promise<void>;
   removeItem: (lineItemId: string) => Promise<void>;
+  updateShippingOption: (shippingOptionCode: string) => Promise<void>;
   clearMessage: () => void;
 }
 
@@ -108,6 +142,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [message, setMessage] = useState<CartMessage | null>(null);
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfo | null>(null);
 
   const refreshCart = async () => {
     try {
@@ -119,32 +154,41 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
       
       if (IS_TEST) {
         console.log('🧪 CartContext: Using MOCK cart data for testing');
-        const cartData = mockCartData as Cart;
+        const estimateData = mockCartData as any;
+        const cartData = estimateData.cart as Cart;
+        const shippingData = estimateData.shippingInfo as ShippingInfo;
         console.log('CartContext: Mock cart data loaded (summary):', {
           cartId: cartData._id,
           lineItemsCount: cartData.lineItems?.length || 0,
           subtotal: cartData?.subtotal,
           currency: cartData?.currency,
+          selectedShipping: shippingData?.selectedCarrierServiceOption?.title,
+          availableOptions: shippingData?.carrierServiceOptions?.reduce((acc, carrier) => acc + carrier.shippingOptions.length, 0),
         });
-        console.log('CartContext: Full mock cart data JSON:');
-        console.log(JSON.stringify(cartData, null, 2));
+        console.log('CartContext: Full mock estimate data JSON:');
+        console.log(JSON.stringify(estimateData, null, 2));
         setCart(cartData);
+        setShippingInfo(shippingData);
         setLoading(false);
         return;
       }
       
       console.log('CartContext: Fetching cart data...');
-      const currentCartData = await currentCart.getCurrentCart();
-      const cartData = currentCartData as Cart;
+      const estimateData = await currentCart.estimateCurrentCartTotals();
+      const cartData = (estimateData as any).cart as Cart;
+      const shippingData = (estimateData as any).shippingInfo as ShippingInfo;
       console.log('CartContext: Cart data received (summary):', {
         cartId: cartData._id,
         lineItemsCount: cartData.lineItems?.length || 0,
         subtotal: cartData?.subtotal,
         currency: cartData?.currency,
+        selectedShipping: shippingData?.selectedCarrierServiceOption?.title,
+        availableOptions: shippingData?.carrierServiceOptions?.reduce((acc, carrier) => acc + carrier.shippingOptions.length, 0),
       });
-      console.log('CartContext: Full cart data JSON:');
-      console.log(JSON.stringify(cartData, null, 2));
+      console.log('CartContext: Full estimate data JSON:');
+      console.log(JSON.stringify(estimateData, null, 2));
       setCart(cartData);
+      setShippingInfo(shippingData);
     } catch (err) {
       console.error('CartContext: Failed to fetch cart:', err);
       setError(err instanceof Error ? err.message : 'Failed to load cart');
@@ -213,6 +257,54 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const removeItem = async (lineItemId: string) => {
     await updateQuantity(lineItemId, 0);
+  };
+
+  const updateShippingOption = async (shippingOptionCode: string) => {
+    const IS_TEST = import.meta.env.VITE_IS_TEST === 'true';
+    
+    if (IS_TEST) {
+      console.log('🧪 CartContext: [TEST MODE] Updating shipping option (simulated):', { shippingOptionCode });
+      // In test mode, just update local state
+      setShippingInfo(prevInfo => {
+        if (!prevInfo) return null;
+        return {
+          ...prevInfo,
+          selectedCarrierServiceOption: {
+            code: shippingOptionCode,
+            title: prevInfo.carrierServiceOptions
+              ?.flatMap(c => c.shippingOptions)
+              .find(opt => opt.code === shippingOptionCode)?.title || ''
+          }
+        };
+      });
+      return;
+    }
+
+    try {
+      console.log('CartContext: Updating shipping option:', { shippingOptionCode });
+      
+      // Update the cart with the new shipping option
+      // The API returns the updated estimate with cart and shippingInfo
+      const estimateData = await (currentCart.updateCurrentCart as any)({
+        selectedShippingOption: {
+          code: shippingOptionCode
+        }
+      });
+      
+      const cartData = (estimateData as any).cart as Cart;
+      const shippingData = (estimateData as any).shippingInfo as ShippingInfo;
+      
+      console.log('CartContext: Cart updated with new shipping:', {
+        selectedShipping: shippingData?.selectedCarrierServiceOption?.title,
+        subtotal: cartData?.subtotal,
+      });
+      
+      setCart(cartData);
+      setShippingInfo(shippingData);
+    } catch (err) {
+      console.error('CartContext: Failed to update shipping option:', err);
+      setError('Failed to update shipping option');
+    }
   };
 
   // Clear message
@@ -420,10 +512,12 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     formattedTotal,
     isAddingToCart,
     message,
+    shippingInfo,
     refreshCart,
     addToCart,
     updateQuantity,
     removeItem,
+    updateShippingOption,
     clearMessage,
   };
 

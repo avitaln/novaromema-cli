@@ -8,20 +8,54 @@ interface CartPageProps {
 }
 
 interface ShippingOption {
-  id: string;
-  label: string;
-  cost: number;
+  code: string;
+  title: string;
+  cost: string;
+  formattedCost: string;
 }
 
-const shippingOptions: ShippingOption[] = [
-  { id: 'regular', label: 'משלוח רגיל', cost: 20.0 },
-  { id: 'pickup1', label: 'איסוף עצמי - חנות ראשית', cost: 0 },
-  { id: 'pickup2', label: 'איסוף עצמי - חנות סניף', cost: 0 },
-];
-
 export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
-  const { cart, loading, error, updateQuantity, removeItem } = useCart();
-  const [selectedShipping, setSelectedShipping] = useState<string>('regular');
+  const { cart, loading, error, updateQuantity, removeItem, shippingInfo, updateShippingOption } = useCart();
+  const [isUpdatingShipping, setIsUpdatingShipping] = useState(false);
+  
+  // Extract all shipping options from the shippingInfo
+  const allShippingOptions: ShippingOption[] = React.useMemo(() => {
+    if (!shippingInfo?.carrierServiceOptions) return [];
+    
+    const options: ShippingOption[] = [];
+    shippingInfo.carrierServiceOptions.forEach(carrier => {
+      carrier.shippingOptions.forEach(option => {
+        options.push({
+          code: option.code,
+          title: option.title,
+          cost: option.cost.price.amount,
+          formattedCost: option.cost.price.formattedAmount,
+        });
+      });
+    });
+    
+    console.log('📦 Available shipping options:', options);
+    return options;
+  }, [shippingInfo]);
+  
+  // Get selected shipping code from shippingInfo
+  const selectedShipping = shippingInfo?.selectedCarrierServiceOption?.code || allShippingOptions[0]?.code || '';
+  
+  // Handle shipping option change
+  const handleShippingChange = async (newShippingCode: string) => {
+    if (newShippingCode === selectedShipping) return;
+    
+    setIsUpdatingShipping(true);
+    try {
+      console.log('CartPage: Changing shipping option to:', newShippingCode);
+      await updateShippingOption(newShippingCode);
+      console.log('CartPage: Shipping option updated successfully');
+    } catch (err) {
+      console.error('CartPage: Failed to update shipping option:', err);
+    } finally {
+      setIsUpdatingShipping(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -169,34 +203,43 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
             <div className={styles.totalRow}>
               <span className={styles.totalLabel}>משלוח</span>
               <span className={styles.totalValue}>
-                {shippingOptions.find(opt => opt.id === selectedShipping)?.cost === 0 
-                  ? 'חינם' 
-                  : `₪${shippingOptions.find(opt => opt.id === selectedShipping)?.cost.toFixed(2)}`
-                }
+                {(() => {
+                  const selectedOption = allShippingOptions.find(opt => opt.code === selectedShipping);
+                  if (!selectedOption) return 'חינם';
+                  return parseFloat(selectedOption.cost) === 0 ? 'חינם' : selectedOption.formattedCost;
+                })()}
               </span>
             </div>
           </div>
 
-          <select 
-            className={styles.shippingSelect}
-            value={selectedShipping}
-            onChange={(e) => setSelectedShipping(e.target.value)}
-          >
-            {shippingOptions.map(option => (
-              <option key={option.id} value={option.id}>
-                {option.label} - {option.cost === 0 ? 'חינם' : `₪${option.cost.toFixed(2)}`}
-              </option>
-            ))}
-          </select>
+          {allShippingOptions.length > 0 && (
+            <select 
+              className={styles.shippingSelect}
+              value={selectedShipping}
+              onChange={(e) => handleShippingChange(e.target.value)}
+              disabled={isUpdatingShipping}
+            >
+              {allShippingOptions.map(option => (
+                <option key={option.code} value={option.code}>
+                  {option.title} - {parseFloat(option.cost) === 0 ? 'חינם' : option.formattedCost}
+                </option>
+              ))}
+            </select>
+          )}
+          {isUpdatingShipping && (
+            <div className={styles.updatingShipping}>מעדכן אפשרות משלוח...</div>
+          )}
 
           <div className={styles.finalTotalContainer}>
             <div className={`${styles.totalRow} ${styles.totalRowFinal}`}>
               <span className={styles.totalLabel}>סך הכל</span>
               <span className={styles.totalAmount}>
-                ₪{(
-                  parseFloat(cart.subtotal.amount) + 
-                  (shippingOptions.find(opt => opt.id === selectedShipping)?.cost || 0)
-                ).toFixed(2)}
+                {(() => {
+                  const selectedOption = allShippingOptions.find(opt => opt.code === selectedShipping);
+                  const shippingCost = selectedOption ? parseFloat(selectedOption.cost) : 0;
+                  const total = parseFloat(cart.subtotal.amount) + shippingCost;
+                  return `₪${total.toFixed(2)}`;
+                })()}
               </span>
             </div>
             <div className={styles.taxMessage}>המס כלול במחיר</div>
