@@ -339,10 +339,13 @@ function CustomElement({ displayName, height, component, productId, productData 
         console.log(`📊 Infinite scroll - page: ${galleryData.currentPage}, products: ${galleryData.products.length} → offset: ${offset}`);
       }
       
+      // Only request returnTotal on the very first page load when we don't have a total yet
+      const shouldReturnTotal = isInitial && galleryData.total === null;
+      
       const filter: ProductFilter = {
         limit: 25,
         offset,
-        returnTotal: isInitial,
+        returnTotal: shouldReturnTotal,
         partial: true,
         onlyInStock: true
       };
@@ -624,11 +627,14 @@ function CustomElement({ displayName, height, component, productId, productData 
           total: null,
           stopLoading: false,
           hasMore: true,
-          scrollPosition: 0
+          scrollPosition: 0,
+          loading: true // Set loading immediately to prevent useEffect from triggering redundant fetch
         }
       };
     });
-  }, []);
+    // Trigger immediate data fetch for Vinyl products (default gallery view)
+    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+  }, [fetchGalleryData]);
 
   const navigateToHome = useCallback(() => {
     console.log('🏠 Navigating to home');
@@ -712,7 +718,8 @@ function CustomElement({ displayName, height, component, productId, productData 
         total: null,
         stopLoading: false,
         hasMore: true,
-        scrollPosition: 0
+        scrollPosition: 0,
+        loading: true // Set loading immediately to prevent useEffect from triggering redundant fetch
       }
     }));
     // Trigger immediate data fetch for CD products
@@ -736,7 +743,8 @@ function CustomElement({ displayName, height, component, productId, productData 
         total: null,
         stopLoading: false,
         hasMore: true,
-        scrollPosition: 0
+        scrollPosition: 0,
+        loading: true // Set loading immediately to prevent useEffect from triggering redundant fetch
       }
     }));
     // Trigger immediate data fetch for Vinyl products
@@ -806,7 +814,8 @@ function CustomElement({ displayName, height, component, productId, productData 
         total: null,
         stopLoading: false,
         hasMore: true,
-        scrollPosition: 0
+        scrollPosition: 0,
+        loading: true // Set loading immediately to prevent useEffect from triggering redundant fetch
       }
     }));
     // Trigger immediate data fetch with new filters
@@ -861,9 +870,11 @@ function CustomElement({ displayName, height, component, productId, productData 
         filters: newFilters,
         products: [], // Reset products for new filters
         currentPage: 0,
+        total: null, // Reset total since filters changed - need new count
         stopLoading: false,
         hasMore: true,
-        scrollPosition: 0
+        scrollPosition: 0,
+        loading: true // Set loading immediately to prevent useEffect from triggering redundant fetch
       }
     }));
     // Fetch with new filters
@@ -873,6 +884,7 @@ function CustomElement({ displayName, height, component, productId, productData 
   const handleGalleryNextPage = useCallback(() => {
     console.log('📄 Next Page clicked - going to page', appState.galleryData.currentPage + 1);
     const nextPage = appState.galleryData.currentPage + 1;
+    const currentFilters = appState.galleryData.filters; // Capture current filters
     
     // Clear products, set loading, and suppress infinite scroll during pagination
     setAppState(prev => ({
@@ -891,11 +903,11 @@ function CustomElement({ displayName, height, component, productId, productData 
     // Scroll to top immediately
     window.scrollTo(0, 0);
     
-    // Load with specific page number with slight delay to avoid conflicts
+    // Load with specific page number with current filters
     setTimeout(() => {
-      fetchGalleryData(true, nextPage, undefined, undefined);
+      fetchGalleryData(true, nextPage, currentFilters, undefined);
     }, 100);
-  }, [appState.galleryData.currentPage, fetchGalleryData]);
+  }, [appState.galleryData.currentPage, appState.galleryData.filters, fetchGalleryData]);
 
   // ===== BROWSER NAVIGATION HANDLING =====
   
