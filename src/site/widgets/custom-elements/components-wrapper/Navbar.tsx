@@ -15,13 +15,23 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGallery, onNavigateToAbout, onNavigateToCd, onNavigateToVinyl, onNavigateToCart }) => {
   const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleSearchButtonClick = () => {
     setIsSearchOverlayOpen(true);
   };
 
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const handleMobileMenuClose = () => {
+    setIsMobileMenuOpen(false);
+  };
+
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    handleMobileMenuClose();
     // Don't navigate if already on home route
     if (window.location.pathname === '/') {
       return;
@@ -31,16 +41,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
 
   const handleGalleryClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    handleMobileMenuClose();
     onNavigateToGallery();
   };
 
   const handleAboutClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    handleMobileMenuClose();
     onNavigateToAbout();
   };
 
   const handleCdClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    handleMobileMenuClose();
     // Don't navigate if already on CD route
     if (window.location.pathname === '/cd') {
       return;
@@ -50,6 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
 
   const handleVinylClick = (e: React.MouseEvent) => {
     e.preventDefault();
+    handleMobileMenuClose();
     // Don't navigate if already on vinyl route
     if (window.location.pathname === '/vinyl') {
       return;
@@ -60,7 +74,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
   return (
     <nav className={styles.navbar} dir="rtl">
       <div className={styles.navbarContainer}>
-        {/* Right side - Menu Items */}
+        {/* Right side - Menu Items (Desktop) */}
         <div className={styles.navbarRightMenu}>
           <a 
             href="/" 
@@ -91,6 +105,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
             מי אנחנו
           </a>
         </div>
+
+        {/* Hamburger Menu Button (Mobile Only) */}
+        <button 
+          className={styles.hamburgerButton}
+          onClick={handleMobileMenuToggle}
+          aria-label="תפריט"
+        >
+          <svg className={styles.hamburgerIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
         {/* Center - Logo */}
         <div className={styles.navbarLogo}>
@@ -132,6 +157,46 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
           <CartButton onClick={onNavigateToCart} />
         </div>
       </div>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <>
+          <div 
+            className={styles.mobileMenuOverlay}
+            onClick={handleMobileMenuClose}
+          />
+          <div className={styles.mobileMenuPopup}>
+            <a 
+              href="/" 
+              className={styles.mobileMenuLink}
+              onClick={handleLogoClick}
+            >
+              דף הבית
+            </a>
+            <a 
+              href="/cd" 
+              className={styles.mobileMenuLink}
+              onClick={handleCdClick}
+            >
+              דיסקים
+            </a>
+            <a 
+              href="/vinyl" 
+              className={styles.mobileMenuLink}
+              onClick={handleVinylClick}
+            >
+              תקליטים
+            </a>
+            <a 
+              href="/about" 
+              className={styles.mobileMenuLink}
+              onClick={handleAboutClick}
+            >
+              מי אנחנו
+            </a>
+          </div>
+        </>
+      )}
 
       {/* Search Overlay */}
       <SearchOverlay 

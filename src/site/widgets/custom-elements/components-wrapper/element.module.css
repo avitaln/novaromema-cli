@@ -20,7 +20,7 @@
   --navbar-total-height: 90px; /* Full navbar height for positioning (content + border + padding) */
   --navbar-total-height-mobile: 65px; /* Full mobile navbar height */
   --filterbar-height: 60px; /* Filterbar height for desktop */
-  --filterbar-height-mobile: 60px; /* Filterbar height for mobile */
+  --filterbar-height-mobile: 120px; /* Filterbar height for mobile */
 }
 
 .root {
@@ -928,8 +928,8 @@
 /* Mobile: Same padding as desktop */
 @media (max-width: 50rem) {
   .productGallery {
-    padding: 32px;
-    padding-top: calc(32px + var(--filterbar-height-mobile)); /* 32px base padding + mobile filterbar height */
+    padding: 0;
+    padding-top: var(--filterbar-height-mobile); /* mobile filterbar height only */
     margin-top: 0;
   }
 }
@@ -942,12 +942,13 @@
 }
 
 .productGrid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 260px);
+  gap: 40px;
   justify-content: center;
   margin: 0 auto 2rem;
   padding: 0 2rem;
+  padding-bottom: 40px;
   max-width: 1600px;
   width: 100%;
   direction: rtl;
@@ -970,11 +971,13 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 800px) {
   .productGrid {
-    gap: 0.75rem;
-    max-width: 600px;
-    padding: 0 1rem;
+    display: grid;
+    justify-items: right;
+    gap: 10px;
+    padding: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   }
   
   .root {
@@ -997,21 +1000,12 @@
   }
 }
 
-@media (max-width: 480px) {
-  .productGrid {
-    gap: 0.5rem;
-    padding: 0 0.5rem;
-  }
-}
-
 /* Product Card Styles - matching old product-element */
 .productCard {
   position: relative;
   border: 1px solid #dddddd;
   border-radius: 4px;
   width: 260px;
-  min-width: 260px;
-  max-width: 260px;
   background-color: white;
   font-size: 16px;
   color: black;
@@ -1025,8 +1019,6 @@
 @media (max-width: 800px) {
   .productCard {
     width: 180px;
-    min-width: 180px;
-    max-width: 180px;
   }
 }
 
@@ -1788,10 +1780,11 @@
   .mobileFilterGrid {
     display: grid;
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(3, minmax(40px, 1fr)); /* 3 equal height rows with minimum */
+    grid-template-rows: repeat(3, minmax(35px, 1fr)); /* 3 equal height rows with minimum */
     gap: 0; /* No gap between rows */
     width: 100%;
-    overflow: hidden;
+    overflow: visible;
+    height: 100%;
   }
   
   /* Mobile Row Styling */
@@ -1813,6 +1806,8 @@
     align-items: center;
     justify-content: center;
     height: auto; /* Let grid control height */
+    margin-right: 0; /* Override the margin-right: auto from base styles */
+    margin-left: 0;
   }
   
   .dropdownLabel {
@@ -1953,7 +1948,7 @@
   height: 1.75rem;
   background-color: #ffffff;
   border-radius: 50%;
-  display: flex;
+  display: none; /* Hidden but not deleted */
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -1970,10 +1965,78 @@
   color: #000000;
 }
 
+/* Hamburger Menu Button */
+.hamburgerButton {
+  display: none; /* Hidden on desktop */
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: background-color 0.3s ease;
+  border-radius: 4px;
+}
+
+.hamburgerButton:hover {
+  background-color: #666666;
+}
+
+.hamburgerIcon {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+/* Mobile Menu Overlay */
+.mobileMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Mobile Menu Popup */
+.mobileMenuPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  z-index: 1000;
+  padding: 6rem 2rem 2rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.mobileMenuLink {
+  color: #000000;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.2rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  text-align: center;
+  width: 100%;
+  max-width: 300px;
+}
+
+.mobileMenuLink:hover {
+  background-color: #f0f0f0;
+}
+
 /* Logo */
 .logoLink {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
+  height: 100%;
 }
 
 .logoImage {
@@ -2091,6 +2154,8 @@
 .footerSection {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .footerTitle {
@@ -2123,6 +2188,9 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .footerLinks li {
@@ -2144,6 +2212,9 @@
   list-style: none;
   margin: 0 0 1rem 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .contactItem {
@@ -2182,6 +2253,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .footerSocialLink {
@@ -2207,6 +2279,7 @@
 .footerContactItem {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
@@ -2257,8 +2330,16 @@
     gap: 0.5rem;
   }
   
+  /* Hide desktop menu on mobile */
   .navbarRightMenu {
-    gap: 0.75rem;
+    display: none;
+  }
+  
+  /* Show hamburger button on mobile */
+  .hamburgerButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .navbarLeftActions {
@@ -2299,6 +2380,58 @@
   .footerContent {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    text-align: center;
+  }
+  
+  .footerSection {
+    align-items: center;
+  }
+  
+  .footerLinks {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .footerSocialLinks {
+    align-items: center;
+  }
+  
+  .footerContactItem {
+    justify-content: center;
+  }
+  
+  .footerContact {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  /* Hero Section Mobile Styles */
+  .homeHero {
+    height: auto;
+    padding: 1rem 0;
+  }
+  
+  .homeHeroInner {
+    padding: 0 1rem;
+  }
+  
+  .homeHeroText {
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 1rem 0;
+  }
+  
+  .homeButtons {
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  
+  .homeMoreButton {
+    font-size: 14px;
+    padding: 12px 24px;
+    letter-spacing: 1px;
   }
   
 }
