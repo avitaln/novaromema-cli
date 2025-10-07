@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './element.module.css';
 import { CartButton } from './Cart';
 import { WIDGET_VERSION } from '../../constants';
+import SearchOverlay from './SearchOverlay';
 
 interface NavbarProps {
   onNavigateToHome: () => void;
@@ -13,16 +14,10 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGallery, onNavigateToAbout, onNavigateToCd, onNavigateToVinyl, onNavigateToCart }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOverlayOpen, setIsSearchOverlayOpen] = useState(false);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      // Navigate to gallery with search query
-      const searchParams = new URLSearchParams({ search: searchQuery.trim() });
-      window.history.pushState({}, '', `/gallery?${searchParams.toString()}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+  const handleSearchButtonClick = () => {
+    setIsSearchOverlayOpen(true);
   };
 
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -117,7 +112,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
         <div className={styles.navbarLeftActions}>
           {/* Search Button */}
           <button 
-            onClick={handleSearchSubmit} 
+            onClick={handleSearchButtonClick} 
             className={styles.searchButton}
           >
             <span>חיפוש</span>
@@ -137,6 +132,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigateToHome, onNavigateToGa
           <CartButton onClick={onNavigateToCart} />
         </div>
       </div>
+
+      {/* Search Overlay */}
+      <SearchOverlay 
+        isOpen={isSearchOverlayOpen}
+        onClose={() => setIsSearchOverlayOpen(false)}
+        placeholder="חיפוש בתוצאות"
+      />
     </nav>
   );
 };

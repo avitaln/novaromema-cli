@@ -91,15 +91,66 @@ const Router: React.FC<RouterProps> = ({
   const [appState, setAppState] = useState<SharedAppState>(initialState);
   const [, forceUpdate] = useState({});
 
-  // Handle browser back/forward navigation
+  // Handle browser back/forward navigation and URL changes
   useEffect(() => {
     const handlePopState = () => {
+      console.log('🔄 Router: popstate event detected');
+      console.log('🔄 Current URL:', window.location.href);
+      
+      // Force re-render first
       forceUpdate({});
+      
+      // Then check if we need to update gallery filters from URL
+      // Use setTimeout to ensure the route parsing happens after state update
+      setTimeout(() => {
+        const route = getCurrentRoute();
+        console.log('🔄 Parsed route:', route);
+        
+        if (route.view === 'gallery' && route.filters) {
+          console.log('🔍 Router: Gallery route with filters detected');
+          
+          // Get current state using callback
+          setAppState(currentState => {
+            const urlFilters = route.filters || {};
+            const currentFilters = currentState.galleryData.filters;
+            
+            console.log('🔍 URL filters:', urlFilters);
+            console.log('🔍 Current filters:', currentFilters);
+            
+            // Build complete filter objects for comparison
+            const urlFilterKeys = Object.keys(urlFilters);
+            
+            // Check if any filter actually changed
+            const hasFilterChanges = urlFilterKeys.length > 0 && urlFilterKeys.some(key => {
+              const urlValue = urlFilters[key as keyof FilterOptions];
+              const currentValue = currentFilters[key as keyof FilterOptions];
+              const changed = urlValue !== currentValue;
+              if (changed) {
+                console.log(`🔍 Filter "${key}" changed: "${currentValue}" -> "${urlValue}"`);
+              }
+              return changed;
+            });
+            
+            if (hasFilterChanges) {
+              console.log('✅ Router: Filter changes confirmed, updating gallery...');
+              // Merge URL filters with current filters
+              const updatedFilters = { ...currentFilters, ...urlFilters };
+              console.log('✅ Updated filters:', updatedFilters);
+              // Trigger the filter change handler
+              onHandleGalleryFiltersChange(updatedFilters);
+            } else {
+              console.log('ℹ️ Router: No filter changes detected');
+            }
+            
+            return currentState;
+          });
+        }
+      }, 50); // Small delay to ensure URL is updated
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [onHandleGalleryFiltersChange]);
 
   // Handle link clicks for SPA navigation
   useEffect(() => {
@@ -198,6 +249,7 @@ const Router: React.FC<RouterProps> = ({
       fetchProductData(route.productId);
     }
   }, [window.location.pathname, appState.galleryData.products.length, appState.galleryData.loading, appState.galleryData.hasMore, appState.galleryData.total]);
+
 
   // Navigation helper functions
   const navigateToHome = () => {

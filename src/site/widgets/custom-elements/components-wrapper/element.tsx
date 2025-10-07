@@ -988,6 +988,12 @@ function CustomElement({ displayName, height, component, productId, productData 
         if (newNavigation.currentView === 'gallery' && !isProductNavigation && prev.navigation.currentView !== 'gallery') {
           // Re-read filters from URL to handle filter resets
           const freshFilters = initializeFiltersFromUrl();
+          
+          console.log('🎯 Navigating to gallery from another page, fetching with fresh filters:', freshFilters);
+          
+          // Trigger immediate data fetch after state update with fresh filters
+          setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
+          
           return {
             ...prev,
             navigation: newNavigation,
@@ -999,9 +1005,45 @@ function CustomElement({ displayName, height, component, productId, productData 
               total: null,
               stopLoading: false,
               hasMore: true,
-              scrollPosition: 0
+              scrollPosition: 0,
+              loading: true // Set loading to prevent duplicate fetch from initialization useEffect
             }
           };
+        }
+        
+        // Handle filter changes when ALREADY on gallery page
+        if (newNavigation.currentView === 'gallery' && prev.navigation.currentView === 'gallery' && !isProductNavigation) {
+          // Re-read filters from URL
+          const freshFilters = initializeFiltersFromUrl();
+          
+          // Check if filters actually changed
+          const filtersChanged = JSON.stringify(freshFilters) !== JSON.stringify(prev.galleryData.filters);
+          
+          if (filtersChanged) {
+            console.log('🔄 Filters changed while on gallery page, refreshing...', {
+              old: prev.galleryData.filters,
+              new: freshFilters
+            });
+            
+            // Trigger immediate data fetch after state update
+            setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
+            
+            return {
+              ...prev,
+              navigation: newNavigation,
+              galleryData: {
+                ...prev.galleryData,
+                products: [], // Clear products to force refresh
+                filters: freshFilters, // Update filters from URL
+                currentPage: 0,
+                total: null,
+                stopLoading: false,
+                hasMore: true,
+                scrollPosition: 0,
+                loading: true // Set loading to prevent duplicate fetch from initialization useEffect
+              }
+            };
+          }
         }
         
         return {

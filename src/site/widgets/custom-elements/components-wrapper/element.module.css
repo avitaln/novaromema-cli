@@ -2303,3 +2303,265 @@
   
 }
 
+/* Search Overlay Styles */
+.searchOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.searchOverlayContent {
+  background: #ffffff;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-in-out;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.searchOverlayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  flex-direction: row-reverse; /* RTL - close button on the right */
+}
+
+.searchOverlayTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.searchOverlayCloseButton {
+  background: none;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  width: 2rem;
+  height: 2rem;
+}
+
+.searchOverlayCloseButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2.5;
+}
+
+.searchOverlayCloseButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.searchOverlayForm {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.searchOverlayInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchOverlayInput {
+  width: 100%;
+  padding: 1rem 3rem 1rem 1rem;
+  font-size: 1.25rem;
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  color: #000000;
+  outline: none;
+  transition: border-color 0.2s;
+  font-family: 'assistant-v2', sans-serif;
+}
+
+.searchOverlayInput:focus {
+  border-color: #000000;
+}
+
+.searchOverlayInput::placeholder {
+  color: #666666;
+}
+
+.searchOverlayClearButton {
+  position: absolute;
+  left: 0.75rem;
+  background: none;
+  border: none;
+  color: #666666;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  width: 2rem;
+  height: 2rem;
+}
+
+.searchOverlayClearButton svg {
+  width: 1rem;
+  height: 1rem;
+  stroke-width: 2.5;
+}
+
+.searchOverlayClearButton:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #000000;
+}
+
+.searchOverlaySection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.searchOverlaySectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.searchOverlayRadioGroup {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.searchOverlayRadioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+.searchOverlayRadioLabel:hover {
+  background: transparent;
+}
+
+.searchOverlayRadioInput {
+  width: 1.25rem;
+  height: 1.25rem;
+  cursor: pointer;
+  accent-color: #000000;
+}
+
+.searchOverlayRadioText {
+  font-size: 1rem;
+  color: #000000;
+  flex: 1;
+}
+
+.searchOverlaySubmitButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+  font-family: 'assistant-v2', sans-serif;
+}
+
+.searchOverlaySubmitButton:hover:not(:disabled) {
+  background: #1a1a1a;
+  transform: scale(1.02);
+}
+
+.searchOverlaySubmitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.searchOverlaySubmitButton svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 2.5;
+}
+
+/* Mobile Responsive Styles for Search Overlay */
+@media (max-width: 768px) {
+  .searchOverlay {
+    padding: 0;
+  }
+  
+  .searchOverlayContent {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .searchOverlayInput {
+    font-size: 1.125rem;
+    padding: 0.875rem 3rem 0.875rem 0.875rem;
+  }
+  
+  .searchOverlayTitle {
+    font-size: 1.25rem;
+  }
+  
+  .searchOverlaySubmitButton {
+    font-size: 1rem;
+  }
+}
+
