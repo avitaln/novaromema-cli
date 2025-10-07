@@ -28,3 +28,5 @@ Notice that current components need to be completely replaces with these:
    - Email icon and text and link: ranizager@gmail.com
    - Whatsapp icon with whatsapp link to 0508155886 : "שלח/י הודעת וואצאפ:" (Click to send message)
 
+
+

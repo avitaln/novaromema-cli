@@ -11,7 +11,7 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { CatalogAPI, type PartialProduct, type FullProduct, type ProductFilter } from './api';
 import { ROUTES, createProductRoute, parseProductRoute } from './routes';
-import { ABOUT_CONTENT, TERMS_CONTENT, ACCESSIBILITY_CONTENT } from './content.tsx';
+import { ABOUT_CONTENT, TERMS_CONTENT, ACCESSIBILITY_CONTENT } from './content';
 import styles from './element.module.css';
 
 interface Props {
