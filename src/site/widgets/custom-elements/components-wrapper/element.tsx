@@ -367,6 +367,9 @@ function CustomElement({ displayName, height, component, productId, productData 
           case 'artist':
             filter.artist = filtersToUse.search;
             break;
+          case 'tracklist':
+            filter.tracklist = filtersToUse.search;
+            break;
           case 'name':
           default:
             filter.name = filtersToUse.search;
@@ -609,6 +612,9 @@ function CustomElement({ displayName, height, component, productId, productData 
     // Reset scroll position to top immediately
     window.scrollTo(0, 0);
     
+    // Reset filters from URL (will be defaults since /vinyl has no query params)
+    const freshFilters = initializeFiltersFromUrl();
+    
     setAppState(prev => {
       // Don't update state if already in gallery view
       if (prev.navigation.currentView === 'gallery') {
@@ -623,6 +629,7 @@ function CustomElement({ displayName, height, component, productId, productData 
         galleryData: {
           ...prev.galleryData,
           products: [], // Clear products to force refresh
+          filters: freshFilters, // Reset filters to defaults
           currentPage: 0,
           total: null,
           stopLoading: false,
@@ -633,7 +640,7 @@ function CustomElement({ displayName, height, component, productId, productData 
       };
     });
     // Trigger immediate data fetch for Vinyl products (default gallery view)
-    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+    setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
   }, [fetchGalleryData]);
 
   const navigateToHome = useCallback(() => {
@@ -708,12 +715,16 @@ function CustomElement({ displayName, height, component, productId, productData 
     // Reset scroll position to top immediately
     window.scrollTo(0, 0);
     
+    // Reset filters from URL (will be defaults since /cd has no query params)
+    const freshFilters = initializeFiltersFromUrl();
+    
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'gallery' },
       galleryData: {
         ...prev.galleryData,
         products: [], // Clear products to force refresh with CD filter
+        filters: freshFilters, // Reset filters to defaults
         currentPage: 0,
         total: null,
         stopLoading: false,
@@ -723,7 +734,7 @@ function CustomElement({ displayName, height, component, productId, productData 
       }
     }));
     // Trigger immediate data fetch for CD products
-    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+    setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
   }, [fetchGalleryData]);
 
   const navigateToVinyl = useCallback(() => {
@@ -733,12 +744,16 @@ function CustomElement({ displayName, height, component, productId, productData 
     // Reset scroll position to top immediately
     window.scrollTo(0, 0);
     
+    // Reset filters from URL (will be defaults since /vinyl has no query params)
+    const freshFilters = initializeFiltersFromUrl();
+    
     setAppState(prev => ({
       ...prev,
       navigation: { currentView: 'gallery' },
       galleryData: {
         ...prev.galleryData,
         products: [], // Clear products to force refresh with Vinyl filter
+        filters: freshFilters, // Reset filters to defaults
         currentPage: 0,
         total: null,
         stopLoading: false,
@@ -748,7 +763,7 @@ function CustomElement({ displayName, height, component, productId, productData 
       }
     }));
     // Trigger immediate data fetch for Vinyl products
-    setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+    setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
   }, [fetchGalleryData]);
 
   const navigateToTerms = useCallback(() => {
@@ -935,14 +950,17 @@ function CustomElement({ displayName, height, component, productId, productData 
         // If navigating to gallery view (CD/Vinyl), clear products to force refresh
         if (newNavigation.currentView === 'gallery' && (currentPath === '/cd' || currentPath === '/vinyl')) {
           console.log('🔄 Gallery route change detected, clearing products for refresh');
+          // Re-read filters from URL to handle filter resets
+          const freshFilters = initializeFiltersFromUrl();
           // Trigger immediate data fetch after state update
-          setTimeout(() => fetchGalleryData(true, undefined, undefined, undefined), 0);
+          setTimeout(() => fetchGalleryData(true, undefined, freshFilters, undefined), 0);
           return {
             ...prev,
             navigation: newNavigation,
             galleryData: {
               ...prev.galleryData,
               products: [], // Clear products to force refresh
+              filters: freshFilters, // Reset filters from URL
               currentPage: 0,
               total: null,
               stopLoading: false,
@@ -968,12 +986,15 @@ function CustomElement({ displayName, height, component, productId, productData 
         
         // Clear gallery data when navigating to gallery from other pages (not product->back)
         if (newNavigation.currentView === 'gallery' && !isProductNavigation && prev.navigation.currentView !== 'gallery') {
+          // Re-read filters from URL to handle filter resets
+          const freshFilters = initializeFiltersFromUrl();
           return {
             ...prev,
             navigation: newNavigation,
             galleryData: {
               ...prev.galleryData,
               products: [], // Clear products to force refresh
+              filters: freshFilters, // Reset filters from URL
               currentPage: 0,
               total: null,
               stopLoading: false,

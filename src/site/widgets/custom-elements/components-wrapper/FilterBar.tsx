@@ -75,7 +75,8 @@ const sortTags = [
 const searchTypeTags = [
   { "value": "name", "label": "כותרת ואמן" },
   { "value": "title", "label": "רק כותרת" },
-  { "value": "artist", "label": "רק אמן" }
+  { "value": "artist", "label": "רק אמן" },
+  { "value": "tracklist", "label": "שמות הקטעים" }
 ];
 
 interface FilterState {

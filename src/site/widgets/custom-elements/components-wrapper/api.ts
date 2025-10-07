@@ -57,6 +57,7 @@ export interface ProductFilter {
   name?: string;
   artist?: string;
   title?: string;
+  tracklist?: string;
   minPrice?: number;
   maxPrice?: number;
   formats?: number[];
@@ -155,6 +156,7 @@ export class CatalogAPI {
     if (filter.name) filterParams.name = filter.name;
     if (filter.artist) filterParams.artist = filter.artist;
     if (filter.title) filterParams.title = filter.title;
+    if (filter.tracklist) filterParams.tracklist = filter.tracklist;
     if (filter.minPrice !== undefined) filterParams.minPrice = filter.minPrice;
     if (filter.maxPrice !== undefined) filterParams.maxPrice = filter.maxPrice;
     if (filter.formats) filterParams.formats = filter.formats;
