@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from './CartContext';
 import { CatalogAPI } from './api';
 import styles from './element.module.css';
+import { getCheckoutUrl } from '../../../../backend/cart.web';
 
 interface CartPageProps {
   onClose: () => void;
@@ -17,6 +18,21 @@ interface ShippingOption {
 export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
   const { cart, loading, error, updateQuantity, removeItem, shippingInfo, updateShippingOption } = useCart();
   const [isUpdatingShipping, setIsUpdatingShipping] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  
+  // Reset checkout state when page is restored from bfcache (browser back button)
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) {
+        // Page was restored from bfcache
+        console.log('CartPage: Page restored from cache, resetting checkout state');
+        setIsCheckingOut(false);
+      }
+    };
+    
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
   
   // Extract all shipping options from the shippingInfo
   const allShippingOptions: ShippingOption[] = React.useMemo(() => {
@@ -54,6 +70,29 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
       console.error('CartPage: Failed to update shipping option:', err);
     } finally {
       setIsUpdatingShipping(false);
+    }
+  };
+
+  // Handle checkout
+  const handleCheckout = async () => {
+    setIsCheckingOut(true);
+    try {
+      console.log('CartPage: Getting checkout URL...');
+      const checkoutUrl = await getCheckoutUrl();
+      console.log('CartPage: Checkout URL received:', checkoutUrl);
+      
+      if (checkoutUrl) {
+        // Keep isCheckingOut true while navigating - don't reset it
+        window.location.href = checkoutUrl;
+      } else {
+        console.error('CartPage: No checkout URL returned');
+        alert('שגיאה בטעינת עמוד התשלום. אנא נסה שנית.');
+        setIsCheckingOut(false);
+      }
+    } catch (err) {
+      console.error('CartPage: Failed to get checkout URL:', err);
+      alert('שגיאה בטעינת עמוד התשלום. אנא נסה שנית.');
+      setIsCheckingOut(false);
     }
   };
 
@@ -257,7 +296,13 @@ export const CartPage: React.FC<CartPageProps> = ({ onClose }) => {
           </div>
 
           <div className={styles.cartActions}>
-            <button className={styles.checkoutButton}>מעבר לתשלום</button>
+            <button 
+              className={styles.checkoutButton}
+              onClick={handleCheckout}
+              disabled={isCheckingOut || isUpdatingShipping}
+            >
+              {isCheckingOut ? 'עובר לתשלום...' : 'מעבר לתשלום'}
+            </button>
           </div>
 
           <div className={styles.secureCheckout}>

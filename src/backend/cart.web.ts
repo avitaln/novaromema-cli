@@ -1,11 +1,17 @@
 import { Permissions, webMethod } from '@wix/web-methods';
-import { currentCart } from '@wix/ecom';
+import { currentCart, checkout } from '@wix/ecom';
 
 export interface AddToCartRequest {
   catalogItemId: string;
   quantity?: number;
   options?: Record<string, any>;
 }
+
+export const getCheckoutUrl = webMethod(Permissions.Anyone, async () => {
+  const { checkoutId } = await currentCart.createCheckoutFromCurrentCart({ channelType: "WIX_APP_STORE" }); 
+  const { checkoutUrl } = await checkout.getCheckoutUrl(checkoutId as string);
+  return checkoutUrl;
+});
 
 export const addToCart = webMethod(Permissions.Anyone, async (request: AddToCartRequest) => {
   try {
